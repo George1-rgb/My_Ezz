@@ -12,6 +12,9 @@
 #include "My_Ezz_Core/Camera.hpp"
 #include "My_Ezz_Core/Rendering/OpenGL/Renderer_OpenGL.hpp"
 #include "My_Ezz_Core/Modules/UIModule.hpp"
+#include "My_Ezz_Core/Input.hpp"
+
+
 
 #include <imgui/imgui.h>
 #include <glm/mat3x3.hpp>
@@ -23,10 +26,10 @@
 using namespace My_Ezz;
 
 GLfloat positions_colors[] = {
-    -0.5f, -0.5f, 0.0f,   1.0f, 1.0f, 0.0f,
-    0.5f, -0.5f, 0.0f,  0.0f, 1.0f, 1.0f,
-    -0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 1.0f,
-     0.5f, 0.5f, 0.0f,   1.0f, 0.0f, 0.0f
+    0.0f, -0.5f, -0.5f,   1.0f, 1.0f, 0.0f,
+    0.0f,  0.5f, -0.5f,   0.0f, 1.0f, 1.0f,
+    0.0f, -0.5f,  0.5f,   1.0f, 0.0f, 1.0f,
+    0.0f,  0.5f,  0.5f,   1.0f, 0.0f, 0.0f
 };
 
 GLint indeces[] = {
@@ -98,6 +101,18 @@ int Application::start(unsigned int widnow_width, unsigned int widnow_height, co
             m_bCloseWindow = true;
         });
 
+	m_eventDispatcher.addEventListener<EventKeyPressed>(
+		[&](EventKeyPressed& event)
+		{
+            Input::PressKey(event.key_Code);
+		});
+
+	m_eventDispatcher.addEventListener<EventKeyReleased>(
+		[&](EventKeyReleased& event)
+		{
+            Input::ReleaseKey(event.key_Code);
+		});
+
     m_window->set_event_callback(
         [&](BaseEvent& event)
         {
@@ -159,8 +174,6 @@ int Application::start(unsigned int widnow_width, unsigned int widnow_height, co
         glm::mat4 modelMatrix = translateMatrix * rotateMatrix * scaleMatrix;
 
         pShaderProgram->setMatrix4("modelMatrix", modelMatrix);
-        camera.setPositionAndRotation(glm::vec3(cameraPosition[0], cameraPosition[1], cameraPosition[2]),
-            glm::vec3(cameraRotation[0], cameraRotation[1], cameraRotation[2]));
         camera.setProjectionMode(perspectiveCamera ? Camera::ProjectionMode::Perspective : Camera::ProjectionMode::Orthographic);
         glm::mat4 viewProjectionMatrix = camera.getProjectionMatrix() * camera.getViewMatrix();
         pShaderProgram->setMatrix4("viewProjectionMatrix", viewProjectionMatrix);

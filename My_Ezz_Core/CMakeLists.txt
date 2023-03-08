@@ -7,6 +7,8 @@ includes/My_Ezz_Core/Application.hpp
 includes/My_Ezz_Core/Log.hpp
 includes/My_Ezz_Core/Event.hpp
 includes/My_Ezz_Core/Camera.hpp
+includes/My_Ezz_Core/Keys.hpp
+includes/My_Ezz_Core/Input.hpp
 )
 
 set(CORE_PRIVATE_INCLUDES
@@ -22,6 +24,7 @@ src/My_Ezz_Core/Modules/UIModule.hpp
 set(CORE_PRIVATE_SOURCES
 src/My_Ezz_Core/Application.cpp
 src/My_Ezz_Core/Window.cpp
+src/My_Ezz_Core/Input.cpp
 src/My_Ezz_Core/Camera.cpp
 src/My_Ezz_Core/Rendering/OpenGL/ShaderProgram.cpp
 src/My_Ezz_Core/Rendering/OpenGL/VertexBuffer.cpp

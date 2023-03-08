@@ -66,7 +66,7 @@ void UIModule::ShowExampleAppDockSpace(bool* p_open)
     static bool opt_fullscreen = true;
     static bool opt_padding = false;
     static ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_None;
-
+    dockspace_flags |= ImGuiDockNodeFlags_PassthruCentralNode;
     // We are using the ImGuiWindowFlags_NoDocking flag to make the parent window not dockable into,
     // because it would be confusing to have two docking targets within each others.
     ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;

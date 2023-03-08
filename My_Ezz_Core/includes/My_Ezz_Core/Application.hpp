@@ -24,8 +24,8 @@ namespace My_Ezz
 
 		float cameraPosition[3] = { 0.0f, 0.0f, 1.1f };
 		float cameraRotation[3] = { 0.0f, 0.0f, 0.0f };
-		bool perspectiveCamera = false;
-		Camera camera;
+		bool perspectiveCamera = true;
+		Camera camera{glm::vec3(-5.0f, 0.0f, 0.0f)};
 
 	private:
 		std::unique_ptr<class Window> m_window;
