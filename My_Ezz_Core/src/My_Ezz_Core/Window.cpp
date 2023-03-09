@@ -122,10 +122,36 @@ int Window::init()
             Renderer_OpenGL::setViewport(width, height);
         });
 
+	glfwSetMouseButtonCallback(m_window,
+		[](GLFWwindow* window, int key, int action, int mods)
+		{
+			WindowData& data = *static_cast<WindowData*>(glfwGetWindowUserPointer(window));
+           
+			double x_pos;
+			double y_pos;
+			glfwGetCursorPos(window, &x_pos, &y_pos);
+
+			switch (action)
+			{
+			case GLFW_PRESS:
+			{
+				EventMouseButtonPressed event(static_cast<MouseButton>(key), x_pos, y_pos);
+				data.eventCallbackFn(event);
+				break;
+			}
+			case GLFW_RELEASE:
+			{
+				EventMouseButtonReleased event(static_cast<MouseButton>(key), x_pos, y_pos);
+				data.eventCallbackFn(event);
+				break;
+			}
+			
+			}
+
+		});
+
+
     UIModule::onWindowCreate(m_window);
-
-   
-
     return 0;
 
 }
@@ -136,4 +162,12 @@ void Window::shutDown()
 
     glfwDestroyWindow(m_window);
     glfwTerminate();
+}
+
+glm::vec2 Window::GetCurrentCursorPosition() const
+{
+	double x_pos;
+	double y_pos;
+	glfwGetCursorPos(m_window, &x_pos, &y_pos);
+    return { x_pos, y_pos };
 }

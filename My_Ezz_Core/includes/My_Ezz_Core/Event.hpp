@@ -131,8 +131,8 @@ namespace My_Ezz
 
 	struct EventMouseButtonPressed : public BaseEvent
 	{
-		EventMouseButtonPressed(const MouseButton key_Code, const bool bRepeated)
-			: key_Code(key_Code), bRepeated(bRepeated)
+		EventMouseButtonPressed(const MouseButton key_Code, const double x_pos, const double y_pos)
+			: key_Code(key_Code), x_pos(x_pos), y_pos(y_pos)
 		{
 		}
 
@@ -141,14 +141,16 @@ namespace My_Ezz
 			return type;
 		}
 		MouseButton key_Code;
-		bool bRepeated;
+		
+		const double x_pos; 
+		const double y_pos;
 		static const EventType type = EventType::MouseButtonPressed;
 	};
 
 	struct EventMouseButtonReleased : public BaseEvent
 	{
-		EventMouseButtonReleased(const MouseButton key_Code)
-			: key_Code(key_Code)
+		EventMouseButtonReleased(const MouseButton key_Code, const double x_pos, const double y_pos)
+			: key_Code(key_Code), x_pos(x_pos), y_pos(y_pos)
 		{
 		}
 
@@ -157,7 +159,8 @@ namespace My_Ezz
 			return type;
 		}
 		MouseButton key_Code;
-
+		const double x_pos;
+		const double y_pos;
 		static const EventType type = EventType::MouseButtonReleased;
 	};
 }

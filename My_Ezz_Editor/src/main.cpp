@@ -6,8 +6,12 @@
 #include <My_Ezz_Core/Application.hpp>
 class My_Ezz_Editor : public My_Ezz::Application
 {
+	double m_dInitialMousePosX = 0.0;
+	double m_dInitialMousePosY = 0.0;
+
 	virtual void on_update() override
 	{
+		
 		glm::vec3 movement_delta{ 0, 0, 0 };
 		glm::vec3 rotation_delta{ 0, 0, 0 };
 
@@ -60,7 +64,32 @@ class My_Ezz_Editor : public My_Ezz::Application
 		{
 			rotation_delta.x -= 0.5f;
 		}
+
+		if (My_Ezz::Input::IsMouseButtonPressed(My_Ezz::MouseButton::MOUSE_BUTTON_RIGHT))
+		{
+			glm::vec2 currentCursorPosition = GetCurrentCursorPosition();
+			if (My_Ezz::Input::IsMouseButtonPressed(My_Ezz::MouseButton::MOUSE_BUTTON_LEFT))
+			{
+				camera.moveRight((currentCursorPosition.x - m_dInitialMousePosX) / 100.0f);
+				camera.moveUp((m_dInitialMousePosY - currentCursorPosition.y) / 100.0f);
+			}
+			else
+			{
+				rotation_delta.z += (m_dInitialMousePosX - currentCursorPosition.x) / 5.0f;
+				rotation_delta.y -= (m_dInitialMousePosY - currentCursorPosition.y) / 5.0f;
+				
+			}
+			m_dInitialMousePosX = currentCursorPosition.x;
+			m_dInitialMousePosY = currentCursorPosition.y;
+		}
+
 		camera.add_movement_and_rotation(movement_delta, rotation_delta);
+	}
+
+	virtual void OnMouseButtonEvent(const My_Ezz::MouseButton mouseButton, const double x_pos, const double y_pos, const bool bPressed) override
+	{
+		m_dInitialMousePosX = x_pos;
+		m_dInitialMousePosY = y_pos;
 	}
 
 	virtual void on_UIDraw() override

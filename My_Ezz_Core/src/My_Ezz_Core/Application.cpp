@@ -113,6 +113,21 @@ int Application::start(unsigned int widnow_width, unsigned int widnow_height, co
             Input::ReleaseKey(event.key_Code);
 		});
 
+
+	m_eventDispatcher.addEventListener<EventMouseButtonPressed>(
+		[&](EventMouseButtonPressed& event)
+		{
+            Input::PressMouseButton(event.key_Code);
+            OnMouseButtonEvent(event.key_Code, event.x_pos, event.y_pos, true);
+		});
+
+	m_eventDispatcher.addEventListener<EventMouseButtonReleased>(
+		[&](EventMouseButtonReleased& event)
+		{
+			Input::ReleaseMouseButton(event.key_Code);
+            OnMouseButtonEvent(event.key_Code, event.x_pos, event.y_pos, false);
+		});
+
     m_window->set_event_callback(
         [&](BaseEvent& event)
         {
@@ -209,4 +224,9 @@ int Application::start(unsigned int widnow_width, unsigned int widnow_height, co
     m_window = nullptr;
 
     return 0;
+}
+
+glm::vec2 Application::GetCurrentCursorPosition() const
+{
+   return m_window->GetCurrentCursorPosition();
 }

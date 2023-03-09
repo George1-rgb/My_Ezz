@@ -124,7 +124,7 @@ void Camera::moveRight(const float fDelta)
 
 void Camera::moveUp(const float fDelta)
 {
-	m_position += m_up * fDelta;
+	m_position += worldUp * fDelta;
 	m_bUpdateViewMatrix = true;
 }
 

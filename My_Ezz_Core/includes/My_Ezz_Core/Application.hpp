@@ -21,6 +21,9 @@ namespace My_Ezz
 
 		virtual void on_UIDraw() {}
 
+		virtual void OnMouseButtonEvent(const MouseButton mouseButton, const double x_pos, const double y_pos, const bool bPressed) {}
+
+		glm::vec2 GetCurrentCursorPosition() const;
 
 		float cameraPosition[3] = { 0.0f, 0.0f, 1.1f };
 		float cameraRotation[3] = { 0.0f, 0.0f, 0.0f };
