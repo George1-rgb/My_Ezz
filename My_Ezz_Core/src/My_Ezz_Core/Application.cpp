@@ -9,15 +9,16 @@
 #include "My_Ezz_Core/Rendering/OpenGL/VertexBuffer.hpp"
 #include "My_Ezz_Core/Rendering/OpenGL/VertexArray.hpp"
 #include "My_Ezz_Core/Rendering/OpenGL/IndexBuffer.hpp"
+#include "My_Ezz_Core/Rendering/OpenGL/Texture2D.hpp"
 #include "My_Ezz_Core/Camera.hpp"
 #include "My_Ezz_Core/Rendering/OpenGL/Renderer_OpenGL.hpp"
 #include "My_Ezz_Core/Modules/UIModule.hpp"
 #include "My_Ezz_Core/Input.hpp"
 
 
-
 #include <imgui/imgui.h>
 #include <glm/mat3x3.hpp>
+#include <glm/ext/matrix_transform.hpp>
 #include <glm/trigonometric.hpp>
 
 #include <GLFW/glfw3.h>
@@ -25,40 +26,142 @@
 
 using namespace My_Ezz;
 
-GLfloat positions_colors[] = {
-    0.0f, -0.5f, -0.5f,   1.0f, 1.0f, 0.0f,
-    0.0f,  0.5f, -0.5f,   0.0f, 1.0f, 1.0f,
-    0.0f, -0.5f,  0.5f,   1.0f, 0.0f, 1.0f,
-    0.0f,  0.5f,  0.5f,   1.0f, 0.0f, 0.0f
+GLfloat positions[] = {
+    -1.0f, -1.0f, -1.0f,   1.0f, 0.0f,
+    -1.0f, 1.0f, -1.0f,    0.0f, 0.0f,
+    -1.0f, -1.0f, 1.0f,    1.0f, 1.0f,
+    -1.0f, 1.0f, 1.0f,     0.0f, 1.0f,
+
+	 1.0f, -1.0f, -1.0f,   1.0f, 0.0f,
+	 1.0f, 1.0f, -1.0f,    0.0f, 0.0f,
+	 1.0f, -1.0f, 1.0f,    1.0f, 1.0f,
+	 1.0f, 1.0f, 1.0f,     0.0f, 1.0f
 };
 
 GLint indeces[] = {
-    0, 1, 2, 3, 2, 1
+    0, 1, 2, 3, 2, 1, //front
+    4, 5, 6, 7, 6, 5, //back
+    0, 4, 6, 0, 2, 6, //right
+    1, 5, 3, 3, 7, 5, //left
+    3, 7, 2, 7, 6, 2, //top
+    1, 5, 0, 5, 0, 4 //bottom
 };
+
+
+void GenerateCircle(unsigned char* data,
+    const unsigned int width,
+    const unsigned int height,
+    const unsigned int center_x, 
+    const unsigned int center_y, 
+    const unsigned int radius,
+    const unsigned char color_r,
+    const unsigned char color_g, 
+    const unsigned char color_b)
+{
+    for (unsigned int x = 0; x < width; ++x)
+    {
+        for (unsigned int y = 0; y < height; ++y)
+        {
+            if ((x - center_x) * (x - center_x) + (y - center_y) * (y - center_y) < radius * radius)
+            {
+				data[3 * (x + width * y) + 0] = color_r;
+				data[3 * (x + width * y) + 1] = color_g;
+				data[3 * (x + width * y) + 2] = color_b;
+            }
+        }
+    }
+}
+
+void GenerateSmileTexture(unsigned char* data,
+    const unsigned int width,
+    const unsigned int height)
+{
+    for (unsigned int x = 0; x < width; ++x)
+    {
+        for (unsigned int y = 0; y < height; ++y)
+        {
+            data[3 * (x + width * y) + 0] = 200;
+            data[3 * (x + width * y) + 1] = 191;
+            data[3 * (x + width * y) + 2] = 231;
+        }
+    }
+
+    //face
+    GenerateCircle(data, width, height, width * 0.5, height * 0.5, width * 0.4, 255, 255, 0);
+
+    //smile
+    GenerateCircle(data, width, height, width * 0.5, height * 0.4, width * 0.2, 0, 0, 0);
+    GenerateCircle(data, width, height, width * 0.5, height * 0.45, width * 0.2, 255, 255, 0);
+
+    //eyes
+    GenerateCircle(data, width, height, width * 0.35, height * 0.6, width * 0.07, 255, 0, 255);
+    GenerateCircle(data, width, height, width * 0.65, height * 0.6, width * 0.07, 0, 0, 255);
+}
+
+void GenerateQuadsTexture(unsigned char* data,
+    const unsigned int width,
+    const unsigned int height)
+{
+	for (unsigned int x = 0; x < width; ++x)
+	{
+		for (unsigned int y = 0; y < height; ++y)
+		{
+            if (x < width / 2 && y < height / 2 || x >= width / 2 && y >= height / 2)
+            {
+				data[3 * (x + width * y) + 0] = 0;
+                data[3 * (x + width * y) + 1] = 0;
+                data[3 * (x + width * y) + 2] = 0;
+            }
+            else
+            {
+				data[3 * (x + width * y) + 0] = 255;
+				data[3 * (x + width * y) + 1] = 255;
+				data[3 * (x + width * y) + 2] = 255;
+            }
+		}
+	}
+}
 
 const char* vertex_shader =
 R"(#version 460
 layout(location = 0) in vec3 vertex_position;
-layout(location = 1) in vec3 vertex_color;
+layout(location = 1) in vec2 texture_coord;
+
+
 uniform mat4 modelMatrix;
 uniform mat4 viewProjectionMatrix;
-out vec3 color;
+uniform int current_frame;
+
+out vec2 tex_coord_Smile;
+out vec2 tex_coord_Quads;
+
+
 void main() {
-    color = vertex_color;
+    tex_coord_Smile = texture_coord;
+    tex_coord_Quads = texture_coord + vec2(current_frame/1000.0f, current_frame/1000.0f);
     gl_Position = viewProjectionMatrix * modelMatrix * vec4(vertex_position, 1.0);
 }
 )";
 
 const char* fragment_shader =
-"#version 460\n"
-"in vec3 color;"
-"out vec4 frag_color;"
-"void main() {"
-"frag_color = vec4(color, 1.0);"
-"}";
+R"(#version 460
+in vec2 tex_coord_Smile;
+in vec2 tex_coord_Quads;
+
+layout (binding = 0) uniform sampler2D InTexture_Smile;
+layout (binding = 1) uniform sampler2D InTexture_Quads;
+
+out vec4 frag_color;
+
+void main() {
+frag_color = texture(InTexture_Smile, tex_coord_Smile) * texture(InTexture_Quads, tex_coord_Quads);
+}
+)";
 std::unique_ptr<ShaderProgram> pShaderProgram;
-std::unique_ptr<VertexBuffer> pPositoinsColorsVBO;
-std::unique_ptr<IndexBuffer> pindexBuffer;;
+std::unique_ptr<VertexBuffer> pCubePositionsVBO;
+std::unique_ptr<IndexBuffer> pCubeIndexBuffer;
+std::unique_ptr<Texture2D> pTexture_Smile;
+std::unique_ptr<Texture2D> pTexture_Quads;
 std::unique_ptr<VertexArray> pVAO_1;
 
 float scale[3] = { 1.0f, 1.0f, 1.0f };
@@ -66,6 +169,16 @@ float rotate = 0.0f;
 float translate[3] = { 0.0f, 0.0f, 1.0f };
 
 float m_backgroundColor[4] = { 0.33f, 0.33f, 0.33f, 0.0f };
+
+
+std::array<glm::vec3, 5> positionsCubes =
+{
+    glm::vec3(-2.f, -2.f, -4.f),
+    glm::vec3(-5.f, 0.f, 3.f),
+    glm::vec3(2.f, 1.f, 2.f),
+    glm::vec3(4.f, -3.f, 3.f),
+    glm::vec3(1.f, -7.f, 1.f),
+};
 
 Application::Application()
 {
@@ -134,6 +247,24 @@ int Application::start(unsigned int widnow_width, unsigned int widnow_height, co
             m_eventDispatcher.dispatch(event);
         });
 
+
+    const unsigned int width = 1000;
+    const unsigned int height = 1000;
+    const unsigned int channels = 3;
+
+    auto* data = new unsigned char[width * height * channels];
+
+    GenerateSmileTexture(data, width, height);
+    pTexture_Smile = std::make_unique<Texture2D>(data, width, height);
+    pTexture_Smile->bind(0);
+
+    GenerateQuadsTexture(data, width, height);
+    pTexture_Quads = std::make_unique<Texture2D>(data, width, height);
+    pTexture_Quads->bind(1);
+
+    delete[] data;
+
+
     //-----------------------------------------------------//
     pShaderProgram = std::make_unique<ShaderProgram>(vertex_shader, fragment_shader);
     if (!pShaderProgram->isCompiled())
@@ -142,19 +273,21 @@ int Application::start(unsigned int widnow_width, unsigned int widnow_height, co
     }
 
 
-    BufferLayout bufferLayout_2vec3
+    BufferLayout bufferLayout_2vec3_vec2
     {
         ShaderDataType::Float3,
-        ShaderDataType::Float3
+        ShaderDataType::Float2
     };
     pVAO_1 = std::make_unique<VertexArray>();
 
-    pPositoinsColorsVBO = std::make_unique<VertexBuffer>(positions_colors, sizeof(positions_colors), bufferLayout_2vec3);
-    pindexBuffer = std::make_unique<IndexBuffer>(indeces, sizeof(indeces) / sizeof(GLuint));
-    pVAO_1->addVertexBuffer(*pPositoinsColorsVBO);
-    pVAO_1->setIndexBuffer(*pindexBuffer);
+    pCubePositionsVBO = std::make_unique<VertexBuffer>(positions, sizeof(positions), bufferLayout_2vec3_vec2);
+    pCubeIndexBuffer = std::make_unique<IndexBuffer>(indeces, sizeof(indeces) / sizeof(GLuint));
+    pVAO_1->addVertexBuffer(*pCubePositionsVBO);
+    pVAO_1->setIndexBuffer(*pCubeIndexBuffer);
     //--------------------------------------------------------------//
 
+    static int frame = 0;
+    Renderer_OpenGL::EnableDepthTesting();
     while (!m_bCloseWindow)
     {
         //----------------------------------------//
@@ -189,11 +322,26 @@ int Application::start(unsigned int widnow_width, unsigned int widnow_height, co
         glm::mat4 modelMatrix = translateMatrix * rotateMatrix * scaleMatrix;
 
         pShaderProgram->setMatrix4("modelMatrix", modelMatrix);
+        //pShaderProgram->setInt("current_frame", frame++);
+
         camera.setProjectionMode(perspectiveCamera ? Camera::ProjectionMode::Perspective : Camera::ProjectionMode::Orthographic);
         glm::mat4 viewProjectionMatrix = camera.getProjectionMatrix() * camera.getViewMatrix();
         pShaderProgram->setMatrix4("viewProjectionMatrix", viewProjectionMatrix);
 
         Renderer_OpenGL::draw(*pVAO_1);
+
+        for (const glm::vec3 curPos : positionsCubes)
+        {
+			glm::mat4 translateMatrix(
+				1, 0, 0, 0,
+				0, 1, 0, 0,
+				0, 0, 1, 0,
+                curPos[0], curPos[1], curPos[2], 1
+			);
+            pShaderProgram->setMatrix4("modelMatrix", translateMatrix);
+            Renderer_OpenGL::draw(*pVAO_1);
+        }
+
 
         //----------//
         UIModule::onWindowUpdateBegin();

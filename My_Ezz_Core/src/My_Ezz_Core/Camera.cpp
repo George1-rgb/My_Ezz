@@ -19,7 +19,7 @@ glm::mat4 Camera::getViewMatrix()
 {
 	if (m_bUpdateViewMatrix)
 		updateViewMatrix();
-
+	m_bUpdateViewMatrix = false;
 	return m_viewMatrix;
 }
 
@@ -66,7 +66,7 @@ void Camera::updateProjectionMatrix()
 	{
 		float r = 0.1f;
 		float t = 0.1f;
-		float f = 10.0f;
+		float f = 100.0f;
 		float n = 0.1f;
 		m_projectionMatrix = glm::mat4(n / r, 0, 0, 0,
 									   0, n/t, 0, 0,

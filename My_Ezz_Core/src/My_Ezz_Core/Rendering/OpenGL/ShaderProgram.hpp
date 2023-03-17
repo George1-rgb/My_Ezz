@@ -18,6 +18,7 @@ namespace My_Ezz
 		static void unbind();
 		bool isCompiled() const { return m_isCompiled; }
 		void setMatrix4(const char* name, glm::mat4& matrix) const;
+		void setInt(const char* name, const int nValue) const;
 	private:
 		bool m_isCompiled = false;
 		unsigned int m_id = 0;

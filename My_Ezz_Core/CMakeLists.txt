@@ -18,6 +18,7 @@ src/My_Ezz_Core/Rendering/OpenGL/VertexBuffer.hpp
 src/My_Ezz_Core/Rendering/OpenGL/IndexBuffer.hpp
 src/My_Ezz_Core/Rendering/OpenGL/VertexArray.hpp
 src/My_Ezz_Core/Rendering/OpenGL/Renderer_OpenGL.hpp
+src/My_Ezz_Core/Rendering/OpenGL/Texture2D.hpp
 src/My_Ezz_Core/Modules/UIModule.hpp
 )
 
@@ -31,6 +32,7 @@ src/My_Ezz_Core/Rendering/OpenGL/VertexBuffer.cpp
 src/My_Ezz_Core/Rendering/OpenGL/IndexBuffer.cpp
 src/My_Ezz_Core/Rendering/OpenGL/VertexArray.cpp
 src/My_Ezz_Core/Rendering/OpenGL/Renderer_OpenGL.cpp
+src/My_Ezz_Core/Rendering/OpenGL/Texture2D.cpp
 src/My_Ezz_Core/Modules/UIModule.cpp
 )
 

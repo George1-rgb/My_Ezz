@@ -38,7 +38,7 @@ void Renderer_OpenGL::setClearColor(const float _red, const float _green, const 
 
 void Renderer_OpenGL::clear()
 {
-    glClear(GL_COLOR_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
 void Renderer_OpenGL::setViewport(const unsigned int _width, const unsigned int _height, const unsigned int _leftOffset, const unsigned int _bottomOffset)
@@ -60,4 +60,14 @@ const char* Renderer_OpenGL::getRendererStr()
 const char* Renderer_OpenGL::getVersionStr()
 {
     return reinterpret_cast<const char*>(glGetString(GL_VERSION));
+}
+
+void Renderer_OpenGL::EnableDepthTesting()
+{
+    glEnable(GL_DEPTH_TEST);
+}
+
+void Renderer_OpenGL::DisableDepthTesting()
+{
+    glDisable(GL_DEPTH_TEST);
 }
