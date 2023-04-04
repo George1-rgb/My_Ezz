@@ -1,6 +1,6 @@
 #include "My_Ezz_Core/Camera.hpp"
 #include <glm/trigonometric.hpp>
-#include <glm/ext/matrix_transform.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
 using namespace My_Ezz;
 
@@ -15,7 +15,7 @@ Camera::Camera(const glm::vec3& _position,
 	updateProjectionMatrix();
 }
 
-glm::mat4 Camera::getViewMatrix()
+const glm::mat4 Camera::getViewMatrix()
 {
 	if (m_bUpdateViewMatrix)
 		updateViewMatrix();
@@ -53,8 +53,8 @@ void Camera::updateViewMatrix()
 
 	const glm::mat3 eulerRotateMatrix = rotateMatrix_z * rotateMatrix_y * rotateMatrix_x;
 
-	m_direction = glm::normalize(worldForward * eulerRotateMatrix);
-	m_right = glm::normalize(worldRight * eulerRotateMatrix);
+	m_direction = glm::normalize(eulerRotateMatrix * worldForward);
+	m_right = glm::normalize(eulerRotateMatrix * worldRight);
 	m_up = glm::cross(m_right, m_direction);
 
 	m_viewMatrix = glm::lookAt(m_position, m_position+m_direction, m_up);
@@ -64,14 +64,7 @@ void Camera::updateProjectionMatrix()
 {
 	if (m_projectionMode == ProjectionMode::Perspective)
 	{
-		float r = 0.1f;
-		float t = 0.1f;
-		float f = 100.0f;
-		float n = 0.1f;
-		m_projectionMatrix = glm::mat4(n / r, 0, 0, 0,
-									   0, n/t, 0, 0,
-									   0, 0, (-f - n) / (f - n), -1,
-									   0, 0, -2*f*n/(f-n), 0);
+		m_projectionMatrix = glm::perspective(glm::radians(m_FieldOfView), m_ViewportWidth / m_ViewportHeight, m_NearClipPlane, m_FarClipPlane);
 	}
 	else
 	{
@@ -136,4 +129,29 @@ void Camera::add_movement_and_rotation(const glm::vec3& movement_delta, const gl
 
 	m_rotation += rotation_delta;
 	m_bUpdateViewMatrix = true;
+}
+
+void Camera::SetFarClipPlane(const float far)
+{
+	m_FarClipPlane = far;
+	updateProjectionMatrix();
+}
+
+void Camera::SetNearClipPlane(const float near)
+{
+	m_NearClipPlane = near;
+	updateProjectionMatrix();
+}
+
+void Camera::SetViewportSize(const float width, const float height)
+{
+	m_ViewportWidth = width;
+	m_ViewportHeight = height;
+	updateProjectionMatrix();
+}
+
+void Camera::SetFieldOfView(const float fieldOfView)
+{
+	m_FieldOfView = fieldOfView;
+	updateProjectionMatrix();
 }

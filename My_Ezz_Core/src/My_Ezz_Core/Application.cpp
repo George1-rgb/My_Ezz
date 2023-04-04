@@ -27,24 +27,52 @@
 using namespace My_Ezz;
 
 GLfloat positions[] = {
-    -1.0f, -1.0f, -1.0f,   1.0f, 0.0f,
-    -1.0f, 1.0f, -1.0f,    0.0f, 0.0f,
-    -1.0f, -1.0f, 1.0f,    1.0f, 1.0f,
-    -1.0f, 1.0f, 1.0f,     0.0f, 1.0f,
+	//    position             normal            UV                  index
 
-	 1.0f, -1.0f, -1.0f,   1.0f, 0.0f,
-	 1.0f, 1.0f, -1.0f,    0.0f, 0.0f,
-	 1.0f, -1.0f, 1.0f,    1.0f, 1.0f,
-	 1.0f, 1.0f, 1.0f,     0.0f, 1.0f
+	   // FRONT
+	   -1.0f, -1.f, -1.f,    -1.f,  0.f,  0.f,     0.f, 0.f,              // 0
+	   -1.0f,  1.f, -1.f,    -1.f,  0.f,  0.f,     1.f, 0.f,              // 1
+	   -1.0f,  1.f,  1.f,    -1.f,  0.f,  0.f,     1.f, 1.f,              // 2
+	   -1.0f, -1.f,  1.f,    -1.f,  0.f,  0.f,     0.f, 1.f,              // 3
+
+	   // BACK                                  
+		1.0f, -1.f, -1.f,     1.f,  0.f,  0.f,     1.f, 0.f,              // 4
+		1.0f,  1.f, -1.f,     1.f,  0.f,  0.f,     0.f, 0.f,              // 5
+		1.0f,  1.f,  1.f,     1.f,  0.f,  0.f,     0.f, 1.f,              // 6
+		1.0f, -1.f,  1.f,     1.f,  0.f,  0.f,     1.f, 1.f,              // 7
+
+		// RIGHT
+		-1.0f,  1.f, -1.f,     0.f,  1.f,  0.f,     0.f, 0.f,              // 8
+		 1.0f,  1.f, -1.f,     0.f,  1.f,  0.f,     1.f, 0.f,              // 9
+		 1.0f,  1.f,  1.f,     0.f,  1.f,  0.f,     1.f, 1.f,              // 10
+		-1.0f,  1.f,  1.f,     0.f,  1.f,  0.f,     0.f, 1.f,              // 11
+
+		// LEFT
+		-1.0f, -1.f, -1.f,     0.f, -1.f,  0.f,     1.f, 0.f,              // 12
+		 1.0f, -1.f, -1.f,     0.f, -1.f,  0.f,     0.f, 0.f,              // 13
+		 1.0f, -1.f,  1.f,     0.f, -1.f,  0.f,     0.f, 1.f,              // 14
+		-1.0f, -1.f,  1.f,     0.f, -1.f,  0.f,     1.f, 1.f,              // 15
+
+		// TOP
+		-1.0f, -1.f,  1.f,     0.f,  0.f,  1.f,     0.f, 0.f,              // 16
+		-1.0f,  1.f,  1.f,     0.f,  0.f,  1.f,     1.f, 0.f,              // 17
+		 1.0f,  1.f,  1.f,     0.f,  0.f,  1.f,     1.f, 1.f,              // 18
+		 1.0f, -1.f,  1.f,     0.f,  0.f,  1.f,     0.f, 1.f,              // 19
+
+		 // BOTTOM
+		 -1.0f, -1.f, -1.f,    0.f,  0.f, -1.f,     0.f, 1.f,              // 20
+		 -1.0f,  1.f, -1.f,    0.f,  0.f, -1.f,     1.f, 1.f,              // 21
+		  1.0f,  1.f, -1.f,    0.f,  0.f, -1.f,     1.f, 0.f,              // 22
+		  1.0f, -1.f, -1.f,    0.f,  0.f, -1.f,     0.f, 0.f,              // 23
 };
 
 GLint indeces[] = {
-    0, 1, 2, 3, 2, 1, //front
-    4, 5, 6, 7, 6, 5, //back
-    0, 4, 6, 0, 2, 6, //right
-    1, 5, 3, 3, 7, 5, //left
-    3, 7, 2, 7, 6, 2, //top
-    1, 5, 0, 5, 0, 4 //bottom
+	    0,   1,  2,  2,  3,  0, // front
+		4,   5,  6,  6,  7,  4, // back
+		8,   9, 10, 10, 11,  8, // right
+		12, 13, 14, 14, 15, 12, // left
+		16, 17, 18, 18, 19, 16, // top
+		20, 21, 22, 22, 23, 20  // bottom
 };
 
 
@@ -125,7 +153,8 @@ void GenerateQuadsTexture(unsigned char* data,
 const char* vertex_shader =
 R"(#version 460
 layout(location = 0) in vec3 vertex_position;
-layout(location = 1) in vec2 texture_coord;
+layout(location = 1) in vec3 vertex_normal;
+layout(location = 2) in vec2 texture_coord;
 
 
 uniform mat4 modelMatrix;
@@ -154,7 +183,8 @@ layout (binding = 1) uniform sampler2D InTexture_Quads;
 out vec4 frag_color;
 
 void main() {
-frag_color = texture(InTexture_Smile, tex_coord_Smile) * texture(InTexture_Quads, tex_coord_Quads);
+frag_color = texture(InTexture_Smile, tex_coord_Smile);
+//frag_color = texture(InTexture_Smile, tex_coord_Smile) * texture(InTexture_Quads, tex_coord_Quads);
 }
 )";
 std::unique_ptr<ShaderProgram> pShaderProgram;
@@ -191,10 +221,74 @@ Application::~Application()
     LOG_INFO("Closing Application");
 }
 
+void Application::draw()
+{
+	//----------------------------------------//
+	Renderer_OpenGL::setClearColor(m_backgroundColor[0], m_backgroundColor[1], m_backgroundColor[2], m_backgroundColor[3]);
+	Renderer_OpenGL::clear();
+
+
+
+	pShaderProgram->bind();
+
+	glm::mat4 scaleMatrix(scale[0], 0, 0, 0,
+		0, scale[1], 0, 0,
+		0, 0, scale[2], 0,
+		0, 0, 0, 1);
+
+	float rotateInRadians = glm::radians(rotate);
+	glm::mat4 rotateMatrix(
+		cos(rotateInRadians), sin(rotateInRadians), 0, 0,
+		-sin(rotateInRadians), cos(rotateInRadians), 0, 0,
+		0, 0, 1, 0,
+		0, 0, 0, 1
+	);
+
+
+	glm::mat4 translateMatrix(
+		1, 0, 0, 0,
+		0, 1, 0, 0,
+		0, 0, 1, 0,
+		translate[0], translate[1], translate[2], 1
+	);
+
+	glm::mat4 modelMatrix = translateMatrix * rotateMatrix * scaleMatrix;
+
+	pShaderProgram->setMatrix4("modelMatrix", modelMatrix);
+	//pShaderProgram->setInt("current_frame", frame++);
+
+
+	glm::mat4 viewProjectionMatrix = camera.getProjectionMatrix() * camera.getViewMatrix();
+	pShaderProgram->setMatrix4("viewProjectionMatrix", viewProjectionMatrix);
+
+	Renderer_OpenGL::draw(*pVAO_1);
+
+	for (const glm::vec3 curPos : positionsCubes)
+	{
+		glm::mat4 translateMatrix(
+			1, 0, 0, 0,
+			0, 1, 0, 0,
+			0, 0, 1, 0,
+			curPos[0], curPos[1], curPos[2], 1
+		);
+		pShaderProgram->setMatrix4("modelMatrix", translateMatrix);
+		Renderer_OpenGL::draw(*pVAO_1);
+	}
+
+	UIModule::onWindowUpdateBegin();
+	on_UIDraw();
+	UIModule::onWindowUpdateDraw();
+
+	//-------------------------------------------------//
+	m_window->on_update();
+	on_update();
+}
+
 int Application::start(unsigned int widnow_width, unsigned int widnow_height, const char* title)
 {
-   
     m_window = std::make_unique<Window>(title, widnow_width, widnow_height);
+    camera.SetViewportSize(static_cast<float>(widnow_width), static_cast<float>(widnow_height));
+
     m_eventDispatcher.addEventListener<EventMouseMoved>(
         [](EventMouseMoved& event) 
         {
@@ -202,16 +296,18 @@ int Application::start(unsigned int widnow_width, unsigned int widnow_height, co
         });
 
     m_eventDispatcher.addEventListener<EventWindowResize>(
-        [](EventWindowResize& event)
+        [&](EventWindowResize& event)
         {
             LOG_INFO("[Resized] Changed size to {0}x{1}", event.width, event.height);
+            camera.SetViewportSize(event.width, event.height);
+            draw();
         });
 
     m_eventDispatcher.addEventListener<EventWindowClose>(
         [&](EventWindowClose& event)
         {
             LOG_INFO("[WindowClose]");
-            m_bCloseWindow = true;
+            close();
         });
 
 	m_eventDispatcher.addEventListener<EventKeyPressed>(
@@ -276,6 +372,7 @@ int Application::start(unsigned int widnow_width, unsigned int widnow_height, co
     BufferLayout bufferLayout_2vec3_vec2
     {
         ShaderDataType::Float3,
+        ShaderDataType::Float3,
         ShaderDataType::Float2
     };
     pVAO_1 = std::make_unique<VertexArray>();
@@ -290,84 +387,7 @@ int Application::start(unsigned int widnow_width, unsigned int widnow_height, co
     Renderer_OpenGL::EnableDepthTesting();
     while (!m_bCloseWindow)
     {
-        //----------------------------------------//
-        Renderer_OpenGL::setClearColor(m_backgroundColor[0], m_backgroundColor[1], m_backgroundColor[2], m_backgroundColor[3]);
-        Renderer_OpenGL::clear();
-
-
-
-        pShaderProgram->bind();
-
-        glm::mat4 scaleMatrix(scale[0], 0, 0, 0,
-            0, scale[1], 0, 0,
-            0, 0, scale[2], 0,
-            0, 0, 0, 1);
-
-        float rotateInRadians = glm::radians(rotate);
-        glm::mat4 rotateMatrix(
-            cos(rotateInRadians), sin(rotateInRadians), 0, 0,
-            -sin(rotateInRadians), cos(rotateInRadians), 0, 0,
-            0, 0, 1, 0,
-            0, 0, 0, 1
-        );
-
-
-        glm::mat4 translateMatrix(
-            1, 0, 0, 0,
-            0, 1, 0, 0,
-            0, 0, 1, 0,
-            translate[0], translate[1], translate[2], 1
-        );
-
-        glm::mat4 modelMatrix = translateMatrix * rotateMatrix * scaleMatrix;
-
-        pShaderProgram->setMatrix4("modelMatrix", modelMatrix);
-        //pShaderProgram->setInt("current_frame", frame++);
-
-        camera.setProjectionMode(perspectiveCamera ? Camera::ProjectionMode::Perspective : Camera::ProjectionMode::Orthographic);
-        glm::mat4 viewProjectionMatrix = camera.getProjectionMatrix() * camera.getViewMatrix();
-        pShaderProgram->setMatrix4("viewProjectionMatrix", viewProjectionMatrix);
-
-        Renderer_OpenGL::draw(*pVAO_1);
-
-        for (const glm::vec3 curPos : positionsCubes)
-        {
-			glm::mat4 translateMatrix(
-				1, 0, 0, 0,
-				0, 1, 0, 0,
-				0, 0, 1, 0,
-                curPos[0], curPos[1], curPos[2], 1
-			);
-            pShaderProgram->setMatrix4("modelMatrix", translateMatrix);
-            Renderer_OpenGL::draw(*pVAO_1);
-        }
-
-
-        //----------//
-        UIModule::onWindowUpdateBegin();
-        bool show = true;
-        UIModule::ShowExampleAppDockSpace(&show);
-
-        ImGui::ShowDemoWindow();
-
-        ImGui::Begin("Background color window");
-        ImGui::ColorEdit4("Background color", m_backgroundColor);
-        ImGui::SliderFloat3("scale", scale, 0.0f, 2.0f);
-        ImGui::SliderFloat("rotate", &rotate, 0.0f, 360.0f);
-        ImGui::SliderFloat3("translate", translate, -1.0f, 1.0f);
-
-        ImGui::SliderFloat3("Camera position", cameraPosition, -10.0f, 10.0f);
-        ImGui::SliderFloat3("Camera rotation", cameraRotation, 0.0f, 360.0f);
-        ImGui::Checkbox("Perspective camera", &perspectiveCamera);
-        ImGui::End();
-        //----------//
-        on_UIDraw();
-
-        UIModule::onWindowUpdateDraw();
-        
-        //-------------------------------------------------//
-        m_window->on_update();
-        on_update();
+        draw();
     }
     m_window = nullptr;
 

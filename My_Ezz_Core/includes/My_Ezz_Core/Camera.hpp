@@ -21,15 +21,23 @@ namespace My_Ezz
 		void setRotation(const glm::vec3& _rotation);
 		void setPositionAndRotation(const glm::vec3& _position, const glm::vec3& _rotation);
 		void setProjectionMode(const ProjectionMode _projectionMode);
-		glm::mat4 getViewMatrix();
-		glm::mat4 getProjectionMatrix() const { return m_projectionMatrix; }
+		void SetFarClipPlane(const float far);
+		void SetNearClipPlane(const float near);
+		void SetViewportSize(const float width, const float height);
+		void SetFieldOfView(const float fieldOfView);
+
+		const glm::mat4 getViewMatrix();
+		const glm::mat4 getProjectionMatrix() const { return m_projectionMatrix; }
+		const float GetFarClipPlane() const { return m_FarClipPlane; }
+		const float GetNearClipPlane() const { return m_NearClipPlane; }
+		const float GetFieldOfView() const { return m_FieldOfView; }
 
 		void moveForward(const float fDelta);
 		void moveRight(const float fDelta);
 		void moveUp(const float fDelta);
 
-		const glm::vec3& getCameraPosition() const { return m_position; }
-		const glm::vec3& getCameraRotation() const { return m_rotation; }
+		const glm::vec3& getPosition() const { return m_position; }
+		const glm::vec3& getRotation() const { return m_rotation; }
 
 		//movement.x - forward, movement.y - right, movement.z - up
 		//rotation.x - roll, rotation.y - pitch, rotation.z - yaw
@@ -46,6 +54,12 @@ namespace My_Ezz
 		glm::vec3 m_direction;
 		glm::vec3 m_right;
 		glm::vec3 m_up;
+
+		float m_FarClipPlane = 100.f;
+		float m_NearClipPlane = 0.1f;
+		float m_ViewportWidth = 800.f;
+		float m_ViewportHeight = 600.f;
+		float m_FieldOfView = 60.f;
 
 		static constexpr glm::vec3 worldUp{ 0.0f, 0.0f, 1.0f };
 		static constexpr glm::vec3 worldRight{ 0.0f, -1.0f, 0.0f };

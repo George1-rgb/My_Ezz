@@ -25,8 +25,6 @@ Window::~Window()
 
 void Window::on_update()
 {
-    
-
     glfwSwapBuffers(m_window);
     glfwPollEvents();
 }

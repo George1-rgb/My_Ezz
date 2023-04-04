@@ -10,7 +10,6 @@ namespace My_Ezz
 
 		static void onWindowUpdateBegin();
 		static void onWindowUpdateDraw();
-		static void ShowExampleAppDockSpace(bool* p_open);
 	private:
 
 	};
