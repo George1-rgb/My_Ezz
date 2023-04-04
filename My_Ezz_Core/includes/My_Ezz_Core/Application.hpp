@@ -25,14 +25,13 @@ namespace My_Ezz
 
 		glm::vec2 GetCurrentCursorPosition() const;
 
-		float cameraPosition[3] = { 0.0f, 0.0f, 1.1f };
-		float cameraRotation[3] = { 0.0f, 0.0f, 0.0f };
-		float cameraFieldOfView = 60.f;
-		float cameraNearPlane = 0.1f;
-		float cameraFarPlane = 100.f;
-		bool perspectiveCamera = true;
 		Camera camera{glm::vec3(-5.0f, 0.0f, 0.0f)};
-
+		float fLightSourcePosition[3] = { 0.0f, 0.0f, 0.0f };
+		float fLightSourceColor[3] = { 1.0f, 1.0f, 1.0f };
+		float fAmbientFactor = 0.1f;
+		float fDiffuseFactor = 1.f;
+		float fSpecularFactor = 0.5f;
+		float fShininess = 32.f;
 	private:
 		void draw();
 

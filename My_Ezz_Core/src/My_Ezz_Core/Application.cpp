@@ -163,12 +163,16 @@ uniform int current_frame;
 
 out vec2 tex_coord_Smile;
 out vec2 tex_coord_Quads;
-
+out vec3 frag_position;
+out vec3 frag_normal;
 
 void main() {
     tex_coord_Smile = texture_coord;
     tex_coord_Quads = texture_coord + vec2(current_frame/1000.0f, current_frame/1000.0f);
-    gl_Position = viewProjectionMatrix * modelMatrix * vec4(vertex_position, 1.0);
+    frag_normal = mat3(transpose(inverse(modelMatrix))) * vertex_normal;
+    vec4 vertex_position_world =  modelMatrix * vec4(vertex_position, 1.0);
+    frag_position = vertex_position_world.xyz;
+    gl_Position = viewProjectionMatrix * vertex_position_world;
 }
 )";
 
@@ -176,27 +180,81 @@ const char* fragment_shader =
 R"(#version 460
 in vec2 tex_coord_Smile;
 in vec2 tex_coord_Quads;
+in vec3 frag_position;
+in vec3 frag_normal;
 
 layout (binding = 0) uniform sampler2D InTexture_Smile;
 layout (binding = 1) uniform sampler2D InTexture_Quads;
 
+uniform vec3 camera_position;
+uniform vec3 light_position;
+uniform vec3 light_color;
+uniform float ambient_factor;
+uniform float diffuse_factor;
+uniform float specular_factor;
+uniform float shininess;
+
 out vec4 frag_color;
 
 void main() {
-frag_color = texture(InTexture_Smile, tex_coord_Smile);
-//frag_color = texture(InTexture_Smile, tex_coord_Smile) * texture(InTexture_Quads, tex_coord_Quads);
+    //ambients
+    vec3 ambient = ambient_factor * light_color;
+
+    //diffuse
+    vec3 normal = normalize(frag_normal);
+    vec3 light_direction = normalize(light_position - frag_position);
+    vec3 diffuse = diffuse_factor * light_color * max(dot(normal, light_direction), 0.0);
+
+    //specular
+    vec3 view_direction = normalize(camera_position * frag_position);
+    vec3 reflect_dir =  reflect(-light_direction, normal);
+    float specular_value =  pow(max(dot(view_direction, reflect_dir), 0.0), shininess);
+    vec3 specular = specular_factor * specular_value * light_color;
+
+    frag_color = texture(InTexture_Smile, tex_coord_Smile) * vec4(ambient+diffuse+specular, 1.f); 
+    //frag_color = texture(InTexture_Smile, tex_coord_Smile) * texture(InTexture_Quads, tex_coord_Quads);
 }
 )";
+
+const char* lightSourceVertexShader =
+R"(#version 460
+layout(location = 0) in vec3 vertex_position;
+layout(location = 1) in vec3 vertex_normal;
+layout(location = 2) in vec2 texture_coord;
+
+
+uniform mat4 modelMatrix;
+uniform mat4 viewProjectionMatrix;
+uniform int current_frame;
+
+
+
+
+void main() {
+    gl_Position = viewProjectionMatrix * modelMatrix * vec4(vertex_position*0.1f, 1.0);
+}
+)";
+
+const char* lightSourceFragmentShader =
+R"(#version 460
+out vec4 frag_color;
+
+uniform vec3 light_color;
+
+void main() {
+frag_color = vec4(light_color, 1.f); 
+
+}
+)";
+
+
 std::unique_ptr<ShaderProgram> pShaderProgram;
+std::unique_ptr<ShaderProgram> pLightSourceShaderProgram;
 std::unique_ptr<VertexBuffer> pCubePositionsVBO;
 std::unique_ptr<IndexBuffer> pCubeIndexBuffer;
 std::unique_ptr<Texture2D> pTexture_Smile;
 std::unique_ptr<Texture2D> pTexture_Quads;
 std::unique_ptr<VertexArray> pVAO_1;
-
-float scale[3] = { 1.0f, 1.0f, 1.0f };
-float rotate = 0.0f;
-float translate[3] = { 0.0f, 0.0f, 1.0f };
 
 float m_backgroundColor[4] = { 0.33f, 0.33f, 0.33f, 0.0f };
 
@@ -231,7 +289,7 @@ void Application::draw()
 
 	pShaderProgram->bind();
 
-	glm::mat4 scaleMatrix(scale[0], 0, 0, 0,
+	/*glm::mat4 scaleMatrix(scale[0], 0, 0, 0,
 		0, scale[1], 0, 0,
 		0, 0, scale[2], 0,
 		0, 0, 0, 1);
@@ -254,15 +312,20 @@ void Application::draw()
 
 	glm::mat4 modelMatrix = translateMatrix * rotateMatrix * scaleMatrix;
 
-	pShaderProgram->setMatrix4("modelMatrix", modelMatrix);
+	pShaderProgram->setMatrix4("modelMatrix", modelMatrix);*/
 	//pShaderProgram->setInt("current_frame", frame++);
 
 
 	glm::mat4 viewProjectionMatrix = camera.getProjectionMatrix() * camera.getViewMatrix();
 	pShaderProgram->setMatrix4("viewProjectionMatrix", viewProjectionMatrix);
-
-	Renderer_OpenGL::draw(*pVAO_1);
-
+    pShaderProgram->setVec3("camera_position", camera.getPosition());
+    pShaderProgram->setVec3("light_position", glm::vec3(fLightSourcePosition[0], fLightSourcePosition[1], fLightSourcePosition[2]));
+    pShaderProgram->setVec3("light_color", glm::vec3(fLightSourceColor[0], fLightSourceColor[1], fLightSourceColor[2]));
+    pShaderProgram->setFloat("ambient_factor", fAmbientFactor);
+    pShaderProgram->setFloat("diffuse_factor", fDiffuseFactor);
+    pShaderProgram->setFloat("specular_factor", fSpecularFactor);
+    pShaderProgram->setFloat("shininess", fShininess);
+    //cubes
 	for (const glm::vec3 curPos : positionsCubes)
 	{
 		glm::mat4 translateMatrix(
@@ -274,6 +337,21 @@ void Application::draw()
 		pShaderProgram->setMatrix4("modelMatrix", translateMatrix);
 		Renderer_OpenGL::draw(*pVAO_1);
 	}
+
+    //light source
+    {
+		pLightSourceShaderProgram->bind();
+        pLightSourceShaderProgram->setMatrix4("viewProjectionMatrix", viewProjectionMatrix);
+		glm::mat4 translateMatrix(
+			1, 0, 0, 0,
+			0, 1, 0, 0,
+			0, 0, 1, 0,
+			fLightSourcePosition[0], fLightSourcePosition[1], fLightSourcePosition[2], 1
+		);
+        pLightSourceShaderProgram->setMatrix4("modelMatrix", translateMatrix);
+        pLightSourceShaderProgram->setVec3("light_color", glm::vec3(fLightSourceColor[0], fLightSourceColor[1], fLightSourceColor[2]));
+        Renderer_OpenGL::draw(*pVAO_1);
+    }
 
 	UIModule::onWindowUpdateBegin();
 	on_UIDraw();
@@ -383,7 +461,12 @@ int Application::start(unsigned int widnow_width, unsigned int widnow_height, co
     pVAO_1->setIndexBuffer(*pCubeIndexBuffer);
     //--------------------------------------------------------------//
 
-    static int frame = 0;
+    pLightSourceShaderProgram = std::make_unique<ShaderProgram>(lightSourceVertexShader, lightSourceFragmentShader);
+	if (!pLightSourceShaderProgram->isCompiled())
+	{
+		return false;
+	}
+    
     Renderer_OpenGL::EnableDepthTesting();
     while (!m_bCloseWindow)
     {

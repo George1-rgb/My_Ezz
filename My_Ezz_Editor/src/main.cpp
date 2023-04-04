@@ -9,6 +9,12 @@ class My_Ezz_Editor : public My_Ezz::Application
 {
 	double m_dInitialMousePosX = 0.0;
 	double m_dInitialMousePosY = 0.0;
+	float cameraPosition[3] = { 0.0f, 0.0f, 1.1f };
+	float cameraRotation[3] = { 0.0f, 0.0f, 0.0f };
+	float cameraFieldOfView = 60.f;
+	float cameraNearPlane = 0.1f;
+	float cameraFarPlane = 100.f;
+	bool perspectiveCamera = true;
 
 	virtual void on_update() override
 	{
@@ -159,6 +165,14 @@ class My_Ezz_Editor : public My_Ezz::Application
 
 
 		ImGui::Begin("Editor");
+
+		ImGui::SliderFloat3("Light source position", fLightSourcePosition, -10.0f, 10.0f);
+		ImGui::ColorEdit3("Light source color", fLightSourceColor);
+		ImGui::SliderFloat("Ambient factor", &fAmbientFactor, 0.0f, 1.0f);
+		ImGui::SliderFloat("Diffuse factor", &fDiffuseFactor, 0.0f, 1.0f);
+		ImGui::SliderFloat("Specular factor", &fSpecularFactor, 0.0f, 1.0f);
+		ImGui::SliderFloat("Shininess", &fShininess, 1.0f, 128.0f);
+
 		if (ImGui::SliderFloat3("Camera position", cameraPosition, -10.0f, 10.0f))
 		{
 			camera.setPosition(glm::vec3(cameraPosition[0], cameraPosition[1], cameraPosition[2]));

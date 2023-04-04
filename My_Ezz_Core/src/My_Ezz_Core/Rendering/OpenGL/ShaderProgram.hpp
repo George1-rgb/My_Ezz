@@ -19,6 +19,8 @@ namespace My_Ezz
 		bool isCompiled() const { return m_isCompiled; }
 		void setMatrix4(const char* name, glm::mat4& matrix) const;
 		void setInt(const char* name, const int nValue) const;
+		void setVec3(const char* name, const glm::vec3& value) const;
+		void setFloat(const char* name, const float value) const;
 	private:
 		bool m_isCompiled = false;
 		unsigned int m_id = 0;

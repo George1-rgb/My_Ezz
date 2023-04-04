@@ -62,6 +62,7 @@ void Camera::updateViewMatrix()
 
 void Camera::updateProjectionMatrix()
 {
+	if (m_ViewportHeight == 0) return;
 	if (m_projectionMode == ProjectionMode::Perspective)
 	{
 		m_projectionMatrix = glm::perspective(glm::radians(m_FieldOfView), m_ViewportWidth / m_ViewportHeight, m_NearClipPlane, m_FarClipPlane);
@@ -117,7 +118,7 @@ void Camera::moveRight(const float fDelta)
 
 void Camera::moveUp(const float fDelta)
 {
-	m_position += worldUp * fDelta;
+	m_position += m_up * fDelta;
 	m_bUpdateViewMatrix = true;
 }
 
