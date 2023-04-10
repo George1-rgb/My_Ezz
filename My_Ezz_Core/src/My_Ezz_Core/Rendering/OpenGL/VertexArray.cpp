@@ -37,19 +37,23 @@ VertexArray::VertexArray(VertexArray&& _vertexArray) noexcept
 void VertexArray::addVertexBuffer(const VertexBuffer& _vertexBuffer)
 {
 	bind();
-	_vertexBuffer.bind();
 
 	for (const BufferElement& currentElement : _vertexBuffer.getLayout().getElements())
 	{
 		glEnableVertexAttribArray(m_countOfElements);
-		glVertexAttribPointer(
-			m_countOfElements, 
-			static_cast<GLint>(currentElement.componentsCount),
-			currentElement.componentType,
-			GL_FALSE, 
-			static_cast<GLsizei>(_vertexBuffer.getLayout().getStride()),
-			reinterpret_cast<const void*>(currentElement.offset)
-		);
+		
+		glBindVertexBuffer(m_countOfElements, _vertexBuffer.GetHandle(), 
+						   currentElement.offset,
+						   static_cast<GLsizei>(_vertexBuffer.getLayout().getStride()));
+
+		glVertexAttribFormat(m_countOfElements, 
+							 static_cast<GLint>(currentElement.componentsCount), 
+							 currentElement.componentType, 
+							 GL_FALSE,
+							 0);
+
+		glVertexAttribBinding(m_countOfElements, m_countOfElements);
+
 		++m_countOfElements;
 	}
 }

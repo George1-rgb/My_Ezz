@@ -122,8 +122,8 @@ void GenerateSmileTexture(unsigned char* data,
     GenerateCircle(data, width, height, width * 0.5, height * 0.45, width * 0.2, 255, 255, 0);
 
     //eyes
-    GenerateCircle(data, width, height, width * 0.35, height * 0.6, width * 0.07, 255, 0, 255);
-    GenerateCircle(data, width, height, width * 0.65, height * 0.6, width * 0.07, 0, 0, 255);
+    GenerateCircle(data, width, height, width * 0.35, height * 0.6, width * 0.1, 255, 0, 255);
+    GenerateCircle(data, width, height, width * 0.65, height * 0.6, width * 0.1, 0, 0, 255);
 }
 
 void GenerateQuadsTexture(unsigned char* data,
@@ -150,44 +150,44 @@ void GenerateQuadsTexture(unsigned char* data,
 	}
 }
 
-const char* vertex_shader =
+
+const char* vertex_shader = 
 R"(#version 460
 layout(location = 0) in vec3 vertex_position;
 layout(location = 1) in vec3 vertex_normal;
 layout(location = 2) in vec2 texture_coord;
 
 
-uniform mat4 modelMatrix;
-uniform mat4 viewProjectionMatrix;
+uniform mat4 modelViewMatrix;
+uniform mat4 mvpMatrix;
+uniform mat3 normalMatrix;
 uniform int current_frame;
 
 out vec2 tex_coord_Smile;
 out vec2 tex_coord_Quads;
-out vec3 frag_position;
-out vec3 frag_normal;
+out vec3 frag_position_eye;
+out vec3 frag_normal_eye;
 
 void main() {
     tex_coord_Smile = texture_coord;
     tex_coord_Quads = texture_coord + vec2(current_frame/1000.0f, current_frame/1000.0f);
-    frag_normal = mat3(transpose(inverse(modelMatrix))) * vertex_normal;
-    vec4 vertex_position_world =  modelMatrix * vec4(vertex_position, 1.0);
-    frag_position = vertex_position_world.xyz;
-    gl_Position = viewProjectionMatrix * vertex_position_world;
+    frag_normal_eye = normalMatrix * vertex_normal;
+    frag_position_eye = vec3(modelViewMatrix * vec4(vertex_position, 1.f));
+    gl_Position = mvpMatrix * vec4(vertex_position, 1.f);
 }
 )";
 
-const char* fragment_shader =
+const char* fragment_shader = 
 R"(#version 460
 in vec2 tex_coord_Smile;
 in vec2 tex_coord_Quads;
-in vec3 frag_position;
-in vec3 frag_normal;
+in vec3 frag_position_eye;
+in vec3 frag_normal_eye;
 
 layout (binding = 0) uniform sampler2D InTexture_Smile;
 layout (binding = 1) uniform sampler2D InTexture_Quads;
 
-uniform vec3 camera_position;
-uniform vec3 light_position;
+uniform vec3 light_position_eye;
 uniform vec3 light_color;
 uniform float ambient_factor;
 uniform float diffuse_factor;
@@ -201,12 +201,12 @@ void main() {
     vec3 ambient = ambient_factor * light_color;
 
     //diffuse
-    vec3 normal = normalize(frag_normal);
-    vec3 light_direction = normalize(light_position - frag_position);
+    vec3 normal = normalize(frag_normal_eye);
+    vec3 light_direction = normalize(light_position_eye - frag_position_eye);
     vec3 diffuse = diffuse_factor * light_color * max(dot(normal, light_direction), 0.0);
 
     //specular
-    vec3 view_direction = normalize(camera_position * frag_position);
+    vec3 view_direction = normalize(-frag_position_eye);
     vec3 reflect_dir =  reflect(-light_direction, normal);
     float specular_value =  pow(max(dot(view_direction, reflect_dir), 0.0), shininess);
     vec3 specular = specular_factor * specular_value * light_color;
@@ -223,15 +223,11 @@ layout(location = 1) in vec3 vertex_normal;
 layout(location = 2) in vec2 texture_coord;
 
 
-uniform mat4 modelMatrix;
-uniform mat4 viewProjectionMatrix;
-uniform int current_frame;
-
-
+uniform mat4 mvpMatrix;
 
 
 void main() {
-    gl_Position = viewProjectionMatrix * modelMatrix * vec4(vertex_position*0.1f, 1.0);
+    gl_Position = mvpMatrix * vec4(vertex_position*0.1f, 1.0);
 }
 )";
 
@@ -259,19 +255,17 @@ std::unique_ptr<VertexArray> pVAO_1;
 float m_backgroundColor[4] = { 0.33f, 0.33f, 0.33f, 0.0f };
 
 
-std::array<glm::vec3, 5> positionsCubes =
+std::array<glm::vec3, 4> positionsCubes =
 {
-    glm::vec3(-2.f, -2.f, -4.f),
-    glm::vec3(-5.f, 0.f, 3.f),
-    glm::vec3(2.f, 1.f, 2.f),
-    glm::vec3(4.f, -3.f, 3.f),
-    glm::vec3(1.f, -7.f, 1.f),
+    glm::vec3(0.f, -3.f, -3.f),
+    glm::vec3(0.f, -3.f, 3.f),
+    glm::vec3(0.f, 3.f, -3.f),
+    glm::vec3(0.f, 3.f, 3.f)
 };
 
 Application::Application()
 {
     LOG_INFO("Starting Application");
-    
 }
 
 Application::~Application()
@@ -288,38 +282,8 @@ void Application::draw()
 
 
 	pShaderProgram->bind();
-
-	/*glm::mat4 scaleMatrix(scale[0], 0, 0, 0,
-		0, scale[1], 0, 0,
-		0, 0, scale[2], 0,
-		0, 0, 0, 1);
-
-	float rotateInRadians = glm::radians(rotate);
-	glm::mat4 rotateMatrix(
-		cos(rotateInRadians), sin(rotateInRadians), 0, 0,
-		-sin(rotateInRadians), cos(rotateInRadians), 0, 0,
-		0, 0, 1, 0,
-		0, 0, 0, 1
-	);
-
-
-	glm::mat4 translateMatrix(
-		1, 0, 0, 0,
-		0, 1, 0, 0,
-		0, 0, 1, 0,
-		translate[0], translate[1], translate[2], 1
-	);
-
-	glm::mat4 modelMatrix = translateMatrix * rotateMatrix * scaleMatrix;
-
-	pShaderProgram->setMatrix4("modelMatrix", modelMatrix);*/
-	//pShaderProgram->setInt("current_frame", frame++);
-
-
-	glm::mat4 viewProjectionMatrix = camera.getProjectionMatrix() * camera.getViewMatrix();
-	pShaderProgram->setMatrix4("viewProjectionMatrix", viewProjectionMatrix);
-    pShaderProgram->setVec3("camera_position", camera.getPosition());
-    pShaderProgram->setVec3("light_position", glm::vec3(fLightSourcePosition[0], fLightSourcePosition[1], fLightSourcePosition[2]));
+	
+    pShaderProgram->setVec3("light_position_eye", glm::vec3(camera.getViewMatrix()*glm::vec4(fLightSourcePosition[0], fLightSourcePosition[1], fLightSourcePosition[2], 1.f)));
     pShaderProgram->setVec3("light_color", glm::vec3(fLightSourceColor[0], fLightSourceColor[1], fLightSourceColor[2]));
     pShaderProgram->setFloat("ambient_factor", fAmbientFactor);
     pShaderProgram->setFloat("diffuse_factor", fDiffuseFactor);
@@ -334,21 +298,28 @@ void Application::draw()
 			0, 0, 1, 0,
 			curPos[0], curPos[1], curPos[2], 1
 		);
-		pShaderProgram->setMatrix4("modelMatrix", translateMatrix);
+		const glm::mat4 modelViewMatrix = camera.getViewMatrix() * translateMatrix;
+		pShaderProgram->setMatrix4("modelViewMatrix", modelViewMatrix);
+
+		const glm::mat4 mvpMatrix = camera.getProjectionMatrix() * modelViewMatrix;
+		pShaderProgram->setMatrix4("mvpMatrix", mvpMatrix);
+
+		const glm::mat3 normalMatrix = glm::transpose(glm::inverse(glm::mat3(modelViewMatrix)));
+		pShaderProgram->setMatrix3("normalMatrix", normalMatrix);
+
 		Renderer_OpenGL::draw(*pVAO_1);
 	}
-
     //light source
     {
-		pLightSourceShaderProgram->bind();
-        pLightSourceShaderProgram->setMatrix4("viewProjectionMatrix", viewProjectionMatrix);
+        pLightSourceShaderProgram->bind();
 		glm::mat4 translateMatrix(
 			1, 0, 0, 0,
 			0, 1, 0, 0,
 			0, 0, 1, 0,
 			fLightSourcePosition[0], fLightSourcePosition[1], fLightSourcePosition[2], 1
 		);
-        pLightSourceShaderProgram->setMatrix4("modelMatrix", translateMatrix);
+
+        pLightSourceShaderProgram->setMatrix4("mvpMatrix", camera.getProjectionMatrix() * camera.getViewMatrix() * translateMatrix);
         pLightSourceShaderProgram->setVec3("light_color", glm::vec3(fLightSourceColor[0], fLightSourceColor[1], fLightSourceColor[2]));
         Renderer_OpenGL::draw(*pVAO_1);
     }

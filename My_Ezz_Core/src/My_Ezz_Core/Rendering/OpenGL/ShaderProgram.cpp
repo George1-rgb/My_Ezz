@@ -107,7 +107,7 @@ void ShaderProgram::unbind()
 	glUseProgram(0);
 }
 
-void ShaderProgram::setMatrix4(const char* name, glm::mat4& matrix) const
+void ShaderProgram::setMatrix4(const char* name, const glm::mat4& matrix) const
 {
 	glUniformMatrix4fv(glGetUniformLocation(m_id, name), 1, GL_FALSE, glm::value_ptr(matrix));
 }
@@ -125,4 +125,9 @@ void ShaderProgram::setVec3(const char* name, const glm::vec3& value) const
 void ShaderProgram::setFloat(const char* name, const float value) const
 {
 	glUniform1f(glGetUniformLocation(m_id, name), value);
+}
+
+void ShaderProgram::setMatrix3(const char* name, const glm::mat3& matrix) const
+{
+	glUniformMatrix3fv(glGetUniformLocation(m_id, name), 1, GL_FALSE, glm::value_ptr(matrix));
 }

@@ -9,6 +9,7 @@ includes/My_Ezz_Core/Event.hpp
 includes/My_Ezz_Core/Camera.hpp
 includes/My_Ezz_Core/Keys.hpp
 includes/My_Ezz_Core/Input.hpp
+includes/My_Ezz_Core/Public_Modules/Multimedia/AudioBase.hpp
 )
 
 set(CORE_PRIVATE_INCLUDES
@@ -34,6 +35,7 @@ src/My_Ezz_Core/Rendering/OpenGL/VertexArray.cpp
 src/My_Ezz_Core/Rendering/OpenGL/Renderer_OpenGL.cpp
 src/My_Ezz_Core/Rendering/OpenGL/Texture2D.cpp
 src/My_Ezz_Core/Modules/UIModule.cpp
+src/My_Ezz_Core/Public_Modules/Multimedia/AudioBase.cpp
 )
 
 set(CORE_ALL_SOURCES

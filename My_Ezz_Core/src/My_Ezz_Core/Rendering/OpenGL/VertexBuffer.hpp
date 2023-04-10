@@ -67,8 +67,8 @@ namespace My_Ezz
 		VertexBuffer& operator=(VertexBuffer&& _vertexBuffer) noexcept;
 		VertexBuffer(VertexBuffer&& _vertexBuffer) noexcept;
 
-		void bind() const;
-		static void unbind();
+		uint64_t GetHandle() const { return m_id; }
+
 		const BufferLayout& getLayout() const { return m_bufferLayout; }
 	private:
 		unsigned int m_id = 0;
