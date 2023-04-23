@@ -1,6 +1,6 @@
 #include "My_Ezz_Core/Rendering/OpenGL/VertexBuffer.hpp"
 
-#include "My_Ezz_Core/Log.hpp"
+#include "My_Ezz_Logger/Log.hpp"
 
 #include "glad/glad.h"
 using namespace My_Ezz;

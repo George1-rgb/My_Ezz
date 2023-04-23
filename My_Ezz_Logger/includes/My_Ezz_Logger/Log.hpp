@@ -1,5 +1,6 @@
 #pragma once
 #include "spdlog/spdlog.h"
+
 namespace My_Ezz
 {
 #ifdef NDEBUG

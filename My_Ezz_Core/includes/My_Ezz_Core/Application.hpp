@@ -34,7 +34,6 @@ namespace My_Ezz
 		float fShininess = 32.f;
 	private:
 		void draw();
-
 		std::unique_ptr<class Window> m_window;
 		EventDispatcher m_eventDispatcher;
 		bool m_bCloseWindow = false;

@@ -4,7 +4,7 @@
 #include <GLFW/glfw3.h>
 
 #include "VertexArray.hpp"
-#include "My_Ezz_Core/Log.hpp"
+#include "My_Ezz_Logger/Log.hpp"
 
 using namespace My_Ezz;
 
@@ -68,35 +68,35 @@ bool Renderer_OpenGL::init(GLFWwindow* _pWindow)
 			switch (severity)
 			{
 			case GL_DEBUG_SEVERITY_HIGH:
-				LOG_ERROR("OpenGL Error: [{0}:{1}]({2}): {3}",
+					LOG_ERROR("OpenGL Error: [{0}:{1}]({2}): {3}",
 					glSourceToString(source),
 					glTypeToString(type),
 					id,
 					message);
 				break;
 			case GL_DEBUG_SEVERITY_MEDIUM:
-				LOG_WARNING("OpenGL Warning: [{0}:{1}]({2}): {3}",
+					LOG_WARNING("OpenGL Warning: [{0}:{1}]({2}): {3}",
 					glSourceToString(source),
 					glTypeToString(type),
 					id,
 					message);
 				break;
 			case GL_DEBUG_SEVERITY_LOW:
-				LOG_INFO("OpenGL Info: [{0}:{1}]({2}): {3}",
+					LOG_INFO("OpenGL Info: [{0}:{1}]({2}): {3}",
 					glSourceToString(source),
 					glTypeToString(type),
 					id,
 					message);
 				break;
 			case GL_DEBUG_SEVERITY_NOTIFICATION:
-				LOG_INFO("OpenGL Notificaton: [{0}:{1}]({2}): {3}",
+					LOG_INFO("OpenGL Notificaton: [{0}:{1}]({2}): {3}",
 					glSourceToString(source),
 					glTypeToString(type),
 					id,
 					message);
 				break;
 			default:
-				LOG_ERROR("OpenGL Error: [{0}:{1}] ({2}) : {3}",
+					LOG_ERROR("OpenGL Error: [{0}:{1}] ({2}) : {3}",
 					glSourceToString(source),
 					glTypeToString(type),
 					id,

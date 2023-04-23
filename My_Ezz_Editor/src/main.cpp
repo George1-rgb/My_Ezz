@@ -5,6 +5,7 @@
 
 #include <My_Ezz_Core/Input.hpp>
 #include <My_Ezz_Core/Application.hpp>
+#include <My_Ezz_Core/ResourceManager.hpp>
 class My_Ezz_Editor : public My_Ezz::Application
 {
 	double m_dInitialMousePosX = 0.0;
@@ -203,10 +204,10 @@ class My_Ezz_Editor : public My_Ezz::Application
 	int frame = 0;
 };
 
-int main()
+int main(int argc, char* argv[])
 {
 	auto pMy_Ezz_Editor = std::make_unique<My_Ezz_Editor>();
-
+	ResourceManager::setExecutablePath(argv[0]);
 	int returnCode = pMy_Ezz_Editor->start(1024, 768, "My_Ezz Editor");
 
 	std::cin.get();

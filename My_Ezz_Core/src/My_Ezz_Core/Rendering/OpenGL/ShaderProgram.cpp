@@ -1,5 +1,5 @@
 #include "ShaderProgram.hpp"
-#include "My_Ezz_Core/Log.hpp"
+#include "My_Ezz_Logger/Log.hpp"
 #include <glad/glad.h>
 #include <glm/gtc/type_ptr.hpp>
 

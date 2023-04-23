@@ -1,5 +1,5 @@
 #include "My_Ezz_Core/Window.hpp"
-#include "My_Ezz_Core/Log.hpp"
+#include "My_Ezz_Logger/Log.hpp"
 #include "My_Ezz_Core/Rendering/OpenGL/Renderer_OpenGL.hpp"
 #include "My_Ezz_Core/Modules/UIModule.hpp"
 
@@ -63,6 +63,8 @@ int Window::init()
     glfwSetKeyCallback(m_window, 
         [](GLFWwindow* window, int key, int scancode, int action, int mods)
         {
+            if (key == GLFW_KEY_UNKNOWN) 
+                return;
             WindowData& data = *static_cast<WindowData*>(glfwGetWindowUserPointer(window));
 	        switch (action)
 	        {

@@ -2,7 +2,7 @@
 
 #include "My_Ezz_Core/Application.hpp"
 
-#include "My_Ezz_Core/Log.hpp"
+#include "My_Ezz_Logger/Log.hpp"
 #include "My_Ezz_Core/Window.hpp"
 
 #include "My_Ezz_Core/Rendering/OpenGL/ShaderProgram.hpp"
@@ -23,7 +23,9 @@
 
 #include <GLFW/glfw3.h>
 #include <iostream>
-
+#include "My_Ezz_Core/ResourceManager.hpp"
+#include "My_Ezz_Multimedia/AudioBase.hpp"
+#include "My_Ezz_Multimedia/Multimedia.hpp"
 using namespace My_Ezz;
 
 GLfloat positions[] = {
@@ -338,6 +340,8 @@ int Application::start(unsigned int widnow_width, unsigned int widnow_height, co
     m_window = std::make_unique<Window>(title, widnow_width, widnow_height);
     camera.SetViewportSize(static_cast<float>(widnow_width), static_cast<float>(widnow_height));
 
+    Multimedia::InitSoundContext();
+
     m_eventDispatcher.addEventListener<EventMouseMoved>(
         [](EventMouseMoved& event) 
         {
@@ -347,7 +351,7 @@ int Application::start(unsigned int widnow_width, unsigned int widnow_height, co
     m_eventDispatcher.addEventListener<EventWindowResize>(
         [&](EventWindowResize& event)
         {
-            LOG_INFO("[Resized] Changed size to {0}x{1}", event.width, event.height);
+            //LOG_INFO("[Resized] Changed size to {0}x{1}", event.width, event.height);
             camera.SetViewportSize(event.width, event.height);
             draw();
         });
@@ -437,7 +441,7 @@ int Application::start(unsigned int widnow_width, unsigned int widnow_height, co
 	{
 		return false;
 	}
-    
+
     Renderer_OpenGL::EnableDepthTesting();
     while (!m_bCloseWindow)
     {
@@ -452,3 +456,4 @@ glm::vec2 Application::GetCurrentCursorPosition() const
 {
    return m_window->GetCurrentCursorPosition();
 }
+

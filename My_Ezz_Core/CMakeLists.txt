@@ -4,12 +4,11 @@ set(CORE_PROJECT_NAME My_Ezz_Core)
 
 set(CORE_PUBLIC_INCLUDES
 includes/My_Ezz_Core/Application.hpp
-includes/My_Ezz_Core/Log.hpp
 includes/My_Ezz_Core/Event.hpp
 includes/My_Ezz_Core/Camera.hpp
 includes/My_Ezz_Core/Keys.hpp
 includes/My_Ezz_Core/Input.hpp
-includes/My_Ezz_Core/Public_Modules/Multimedia/AudioBase.hpp
+includes/My_Ezz_Core/ResourceManager.hpp
 )
 
 set(CORE_PRIVATE_INCLUDES
@@ -35,7 +34,7 @@ src/My_Ezz_Core/Rendering/OpenGL/VertexArray.cpp
 src/My_Ezz_Core/Rendering/OpenGL/Renderer_OpenGL.cpp
 src/My_Ezz_Core/Rendering/OpenGL/Texture2D.cpp
 src/My_Ezz_Core/Modules/UIModule.cpp
-src/My_Ezz_Core/Public_Modules/Multimedia/AudioBase.cpp
+src/My_Ezz_Core/ResourceManager.cpp
 )
 
 set(CORE_ALL_SOURCES
@@ -59,8 +58,8 @@ target_compile_features(${CORE_PROJECT_NAME} PUBLIC cxx_std_20)
 add_subdirectory(../external/glfw ${CMAKE_CURRENT_BINARY_DIR}/glfw)
 target_link_libraries(${CORE_PROJECT_NAME} PRIVATE glfw)
 
-add_subdirectory(../external/spdlog ${CMAKE_CURRENT_BINARY_DIR}/spdlog)
-target_link_libraries(${CORE_PROJECT_NAME} PRIVATE spdlog)
+#add_subdirectory(../external/spdlog ${CMAKE_CURRENT_BINARY_DIR}/spdlog)
+#target_link_libraries(${CORE_PROJECT_NAME} PRIVATE spdlog)
 
 add_subdirectory(../external/glad ${CMAKE_CURRENT_BINARY_DIR}/glad)
 target_link_libraries(${CORE_PROJECT_NAME} PRIVATE glad)
@@ -95,3 +94,4 @@ target_include_directories(ImGui PUBLIC ../external/imgui)
 target_link_libraries(ImGui PRIVATE glad glfw)
 
 target_link_libraries(${CORE_PROJECT_NAME} PRIVATE ImGui)
+target_link_libraries(${CORE_PROJECT_NAME} PRIVATE My_Ezz_Multimedia My_Ezz_Logger)

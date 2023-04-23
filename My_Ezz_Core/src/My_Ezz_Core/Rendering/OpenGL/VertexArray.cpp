@@ -1,5 +1,5 @@
 #include "My_Ezz_Core/Rendering/OpenGL/VertexArray.hpp"
-#include "My_Ezz_Core/Log.hpp"
+#include "My_Ezz_Logger/Log.hpp"
 #include <glad/glad.h>
 
 using namespace My_Ezz;
