@@ -8,4 +8,3 @@ add_subdirectory(My_Ezz_Multimedia)
 add_subdirectory(My_Ezz_Logger)
 
 set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT My_Ezz_Editor)
-

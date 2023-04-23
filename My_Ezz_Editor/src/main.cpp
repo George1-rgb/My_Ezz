@@ -206,10 +206,12 @@ class My_Ezz_Editor : public My_Ezz::Application
 
 int main(int argc, char* argv[])
 {
-	auto pMy_Ezz_Editor = std::make_unique<My_Ezz_Editor>();
 	ResourceManager::setExecutablePath(argv[0]);
+
+	auto pMy_Ezz_Editor = std::make_unique<My_Ezz_Editor>();
 	int returnCode = pMy_Ezz_Editor->start(1024, 768, "My_Ezz Editor");
 
 	std::cin.get();
+	ResourceManager::UnloadAllResources();
 	return returnCode;
 }

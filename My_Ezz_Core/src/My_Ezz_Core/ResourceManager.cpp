@@ -1,6 +1,7 @@
 #include "My_Ezz_Core/ResourceManager.hpp"
 #include "My_Ezz_Multimedia/AudioBase.hpp"
 #include "My_Ezz_Logger/Log.hpp"
+#include "My_Ezz_Core/Rendering/OpenGL/ShaderProgram.hpp"
 //#include <rapidjson/document.h>
 //#include <rapidjson/error/en.h>
 #include <vector>
@@ -14,6 +15,7 @@
 
 std::string ResourceManager::path;
 ResourceManager::SoundsMap  ResourceManager::m_sounds;
+ResourceManager::ShaderProgramsMap  ResourceManager::m_shadersPrograms;
 
 void ResourceManager::unloadAllResources()
 {
@@ -215,6 +217,53 @@ char* load_wav(const std::string& filename,
 
 
 
+void ResourceManager::UnloadAllResources()
+{
+	m_shadersPrograms.clear();
+	m_sounds.clear();
+	path.clear();
+}
+
+std::shared_ptr<My_Ezz::ShaderProgram> ResourceManager::loadShaders(const std::string& shaderName, const std::string& vertexPath, const std::string& fragmentPath)
+{
+	std::string vertexString = getFileString(vertexPath);
+	if (vertexString.empty())
+	{
+		LOG_CRITICAL("No vertex shader");
+		return nullptr;
+	}
+	std::string fragmentString = getFileString(fragmentPath);
+	if (fragmentString.empty())
+	{
+		LOG_CRITICAL("No fragment shader");
+		return nullptr;
+	}
+
+	std::shared_ptr<My_Ezz::ShaderProgram>& newShader =
+		m_shadersPrograms.emplace(shaderName, std::make_shared<My_Ezz::ShaderProgram>(vertexString.c_str(), fragmentString.c_str())).first->second;
+	if (newShader->isCompiled())
+		return newShader;
+	else
+	{
+		LOG_CRITICAL("Can't load shader program:  Vertex: {0}, Fragment: {1}", vertexPath, fragmentPath);
+		return nullptr;
+	}
+}
+
+std::shared_ptr<My_Ezz::ShaderProgram> ResourceManager::getShaderProgram(const std::string& shaderName)
+{
+	ShaderProgramsMap::const_iterator it = m_shadersPrograms.find(shaderName);
+	if (it != m_shadersPrograms.end())
+	{
+		return it->second;
+	}
+	else
+	{
+		LOG_CRITICAL("Can't find the shader program: {0}", shaderName);
+		return nullptr;
+	}
+}
+
 std::shared_ptr<My_Ezz::AudioBase> ResourceManager::loadSound(const std::string& soundName, const std::string& soundPath)
 {
 	std::uint8_t channels;
@@ -223,7 +272,7 @@ std::shared_ptr<My_Ezz::AudioBase> ResourceManager::loadSound(const std::string&
 	char* soundData;
 	std::int32_t size;
 	soundData = load_wav(path + "/" + soundPath, channels, sampleRate, bitsPerSample, size);
-	std::shared_ptr<My_Ezz::AudioBase> newSound = m_sounds.emplace(soundName,
+	std::shared_ptr<My_Ezz::AudioBase>& newSound = m_sounds.emplace(soundName,
 		std::make_shared<My_Ezz::AudioBase>(soundData, channels, sampleRate, bitsPerSample, size)).first->second;
 	return newSound;
 }

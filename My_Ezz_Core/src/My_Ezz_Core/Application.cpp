@@ -152,102 +152,8 @@ void GenerateQuadsTexture(unsigned char* data,
 	}
 }
 
-
-const char* vertex_shader = 
-R"(#version 460
-layout(location = 0) in vec3 vertex_position;
-layout(location = 1) in vec3 vertex_normal;
-layout(location = 2) in vec2 texture_coord;
-
-
-uniform mat4 modelViewMatrix;
-uniform mat4 mvpMatrix;
-uniform mat3 normalMatrix;
-uniform int current_frame;
-
-out vec2 tex_coord_Smile;
-out vec2 tex_coord_Quads;
-out vec3 frag_position_eye;
-out vec3 frag_normal_eye;
-
-void main() {
-    tex_coord_Smile = texture_coord;
-    tex_coord_Quads = texture_coord + vec2(current_frame/1000.0f, current_frame/1000.0f);
-    frag_normal_eye = normalMatrix * vertex_normal;
-    frag_position_eye = vec3(modelViewMatrix * vec4(vertex_position, 1.f));
-    gl_Position = mvpMatrix * vec4(vertex_position, 1.f);
-}
-)";
-
-const char* fragment_shader = 
-R"(#version 460
-in vec2 tex_coord_Smile;
-in vec2 tex_coord_Quads;
-in vec3 frag_position_eye;
-in vec3 frag_normal_eye;
-
-layout (binding = 0) uniform sampler2D InTexture_Smile;
-layout (binding = 1) uniform sampler2D InTexture_Quads;
-
-uniform vec3 light_position_eye;
-uniform vec3 light_color;
-uniform float ambient_factor;
-uniform float diffuse_factor;
-uniform float specular_factor;
-uniform float shininess;
-
-out vec4 frag_color;
-
-void main() {
-    //ambients
-    vec3 ambient = ambient_factor * light_color;
-
-    //diffuse
-    vec3 normal = normalize(frag_normal_eye);
-    vec3 light_direction = normalize(light_position_eye - frag_position_eye);
-    vec3 diffuse = diffuse_factor * light_color * max(dot(normal, light_direction), 0.0);
-
-    //specular
-    vec3 view_direction = normalize(-frag_position_eye);
-    vec3 reflect_dir =  reflect(-light_direction, normal);
-    float specular_value =  pow(max(dot(view_direction, reflect_dir), 0.0), shininess);
-    vec3 specular = specular_factor * specular_value * light_color;
-
-    frag_color = texture(InTexture_Smile, tex_coord_Smile) * vec4(ambient+diffuse+specular, 1.f); 
-    //frag_color = texture(InTexture_Smile, tex_coord_Smile) * texture(InTexture_Quads, tex_coord_Quads);
-}
-)";
-
-const char* lightSourceVertexShader =
-R"(#version 460
-layout(location = 0) in vec3 vertex_position;
-layout(location = 1) in vec3 vertex_normal;
-layout(location = 2) in vec2 texture_coord;
-
-
-uniform mat4 mvpMatrix;
-
-
-void main() {
-    gl_Position = mvpMatrix * vec4(vertex_position*0.1f, 1.0);
-}
-)";
-
-const char* lightSourceFragmentShader =
-R"(#version 460
-out vec4 frag_color;
-
-uniform vec3 light_color;
-
-void main() {
-frag_color = vec4(light_color, 1.f); 
-
-}
-)";
-
-
-std::unique_ptr<ShaderProgram> pShaderProgram;
-std::unique_ptr<ShaderProgram> pLightSourceShaderProgram;
+std::shared_ptr<ShaderProgram> pShaderProgram;
+std::shared_ptr<ShaderProgram> pLightSourceShaderProgram;
 std::unique_ptr<VertexBuffer> pCubePositionsVBO;
 std::unique_ptr<IndexBuffer> pCubeIndexBuffer;
 std::unique_ptr<Texture2D> pTexture_Smile;
@@ -342,6 +248,9 @@ int Application::start(unsigned int widnow_width, unsigned int widnow_height, co
 
     Multimedia::InitSoundContext();
 
+	ResourceManager::loadShaders("main_shader", "res/shaders/main_shader.vert", "res/shaders/main_shader.frag");
+	ResourceManager::loadShaders("light_shader", "res/shaders/light_shader.vert", "res/shaders/light_shader.frag");
+
     m_eventDispatcher.addEventListener<EventMouseMoved>(
         [](EventMouseMoved& event) 
         {
@@ -415,7 +324,7 @@ int Application::start(unsigned int widnow_width, unsigned int widnow_height, co
 
 
     //-----------------------------------------------------//
-    pShaderProgram = std::make_unique<ShaderProgram>(vertex_shader, fragment_shader);
+    pShaderProgram = ResourceManager::getShaderProgram("main_shader");
     if (!pShaderProgram->isCompiled())
     {
         return false;
@@ -436,7 +345,7 @@ int Application::start(unsigned int widnow_width, unsigned int widnow_height, co
     pVAO_1->setIndexBuffer(*pCubeIndexBuffer);
     //--------------------------------------------------------------//
 
-    pLightSourceShaderProgram = std::make_unique<ShaderProgram>(lightSourceVertexShader, lightSourceFragmentShader);
+    pLightSourceShaderProgram = ResourceManager::getShaderProgram("light_shader");
 	if (!pLightSourceShaderProgram->isCompiled())
 	{
 		return false;
