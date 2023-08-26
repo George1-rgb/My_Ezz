@@ -9,6 +9,9 @@ includes/My_Ezz_Core/Camera.hpp
 includes/My_Ezz_Core/Keys.hpp
 includes/My_Ezz_Core/Input.hpp
 includes/My_Ezz_Core/ResourceManager.hpp
+includes/My_Ezz_Core/Interfaces.hpp
+includes/My_Ezz_Core/Objects/Object.hpp
+includes/My_Ezz_Core/Objects/LightBase.hpp
 )
 
 set(CORE_PRIVATE_INCLUDES
@@ -35,6 +38,8 @@ src/My_Ezz_Core/Rendering/OpenGL/Renderer_OpenGL.cpp
 src/My_Ezz_Core/Rendering/OpenGL/Texture2D.cpp
 src/My_Ezz_Core/Modules/UIModule.cpp
 src/My_Ezz_Core/ResourceManager.cpp
+src/My_Ezz_Core/Objects/Object.cpp
+src/My_Ezz_Core/Objects/LightBase.cpp
 )
 
 set(CORE_ALL_SOURCES

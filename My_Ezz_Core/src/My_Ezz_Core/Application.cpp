@@ -26,6 +26,7 @@
 #include "My_Ezz_Core/ResourceManager.hpp"
 #include "My_Ezz_Multimedia/AudioBase.hpp"
 #include "My_Ezz_Multimedia/Multimedia.hpp"
+
 using namespace My_Ezz;
 
 GLfloat positions[] = {
@@ -154,11 +155,11 @@ void GenerateQuadsTexture(unsigned char* data,
 
 std::shared_ptr<ShaderProgram> pShaderProgram;
 std::shared_ptr<ShaderProgram> pLightSourceShaderProgram;
-std::unique_ptr<VertexBuffer> pCubePositionsVBO;
-std::unique_ptr<IndexBuffer> pCubeIndexBuffer;
-std::unique_ptr<Texture2D> pTexture_Smile;
-std::unique_ptr<Texture2D> pTexture_Quads;
-std::unique_ptr<VertexArray> pVAO_1;
+std::shared_ptr<VertexBuffer> pCubePositionsVBO;
+std::shared_ptr<IndexBuffer> pCubeIndexBuffer;
+std::shared_ptr<Texture2D> pTexture_Smile;
+std::shared_ptr<Texture2D> pTexture_Quads;
+std::shared_ptr<VertexArray> pVAO_1;
 
 float m_backgroundColor[4] = { 0.33f, 0.33f, 0.33f, 0.0f };
 
@@ -187,50 +188,32 @@ void Application::draw()
 	Renderer_OpenGL::setClearColor(m_backgroundColor[0], m_backgroundColor[1], m_backgroundColor[2], m_backgroundColor[3]);
 	Renderer_OpenGL::clear();
 
-
+	//light source
+	{
+		pLightSourceShaderProgram->bind();
+		m_pLightObj->Translate(glm::vec3(fLightSourcePosition[0], fLightSourcePosition[1], fLightSourcePosition[2]));
+		m_pLightObj->SetShaderMatrixs(camera.getProjectionMatrix(), camera.getViewMatrix());
+		m_pLightObj->SetColor(glm::vec3(fLightSourceColor[0], fLightSourceColor[1], fLightSourceColor[2]));
+		m_pLightObj->Draw(pLightSourceShaderProgram);
+	}
 
 	pShaderProgram->bind();
 	
-    pShaderProgram->setVec3("light_position_eye", glm::vec3(camera.getViewMatrix()*glm::vec4(fLightSourcePosition[0], fLightSourcePosition[1], fLightSourcePosition[2], 1.f)));
-    pShaderProgram->setVec3("light_color", glm::vec3(fLightSourceColor[0], fLightSourceColor[1], fLightSourceColor[2]));
-    pShaderProgram->setFloat("ambient_factor", fAmbientFactor);
-    pShaderProgram->setFloat("diffuse_factor", fDiffuseFactor);
-    pShaderProgram->setFloat("specular_factor", fSpecularFactor);
-    pShaderProgram->setFloat("shininess", fShininess);
+	pShaderProgram->setVec3("light_position_eye", glm::vec3(camera.getViewMatrix() * glm::vec4(fLightSourcePosition[0], fLightSourcePosition[1], fLightSourcePosition[2], 1.f)));
+	pShaderProgram->setVec3("light_color", glm::vec3(fLightSourceColor[0], fLightSourceColor[1], fLightSourceColor[2]));
+	pShaderProgram->setFloat("ambient_factor", fAmbientFactor);
+	pShaderProgram->setFloat("diffuse_factor", fDiffuseFactor);
+	pShaderProgram->setFloat("specular_factor", fSpecularFactor);
+	pShaderProgram->setFloat("shininess", fShininess);
     //cubes
+    int count = 0;
 	for (const glm::vec3 curPos : positionsCubes)
 	{
-		glm::mat4 translateMatrix(
-			1, 0, 0, 0,
-			0, 1, 0, 0,
-			0, 0, 1, 0,
-			curPos[0], curPos[1], curPos[2], 1
-		);
-		const glm::mat4 modelViewMatrix = camera.getViewMatrix() * translateMatrix;
-		pShaderProgram->setMatrix4("modelViewMatrix", modelViewMatrix);
-
-		const glm::mat4 mvpMatrix = camera.getProjectionMatrix() * modelViewMatrix;
-		pShaderProgram->setMatrix4("mvpMatrix", mvpMatrix);
-
-		const glm::mat3 normalMatrix = glm::transpose(glm::inverse(glm::mat3(modelViewMatrix)));
-		pShaderProgram->setMatrix3("normalMatrix", normalMatrix);
-
-		Renderer_OpenGL::draw(*pVAO_1);
+        m_vDrawingObjects[count]->SetShaderMatrixs(camera.getProjectionMatrix(), camera.getViewMatrix());
+        m_vDrawingObjects[count]->Translate(curPos);
+        m_vDrawingObjects[count]->Draw(pShaderProgram);
+        count++;
 	}
-    //light source
-    {
-        pLightSourceShaderProgram->bind();
-		glm::mat4 translateMatrix(
-			1, 0, 0, 0,
-			0, 1, 0, 0,
-			0, 0, 1, 0,
-			fLightSourcePosition[0], fLightSourcePosition[1], fLightSourcePosition[2], 1
-		);
-
-        pLightSourceShaderProgram->setMatrix4("mvpMatrix", camera.getProjectionMatrix() * camera.getViewMatrix() * translateMatrix);
-        pLightSourceShaderProgram->setVec3("light_color", glm::vec3(fLightSourceColor[0], fLightSourceColor[1], fLightSourceColor[2]));
-        Renderer_OpenGL::draw(*pVAO_1);
-    }
 
 	UIModule::onWindowUpdateBegin();
 	on_UIDraw();
@@ -337,19 +320,24 @@ int Application::start(unsigned int widnow_width, unsigned int widnow_height, co
         ShaderDataType::Float3,
         ShaderDataType::Float2
     };
-    pVAO_1 = std::make_unique<VertexArray>();
 
-    pCubePositionsVBO = std::make_unique<VertexBuffer>(positions, sizeof(positions), bufferLayout_2vec3_vec2);
-    pCubeIndexBuffer = std::make_unique<IndexBuffer>(indeces, sizeof(indeces) / sizeof(GLuint));
-    pVAO_1->addVertexBuffer(*pCubePositionsVBO);
-    pVAO_1->setIndexBuffer(*pCubeIndexBuffer);
+    pCubePositionsVBO = std::make_shared<VertexBuffer>(positions, sizeof(positions), bufferLayout_2vec3_vec2);
+    pCubeIndexBuffer = std::make_shared<IndexBuffer>(indeces, sizeof(indeces) / sizeof(GLuint));
+    
+    for (const glm::vec3 curPos : positionsCubes)
+    {
+        m_vDrawingObjects.push_back(std::make_shared<Object>(pCubePositionsVBO, pCubeIndexBuffer));
+    }
+
+    // --------//
     //--------------------------------------------------------------//
-
+    
     pLightSourceShaderProgram = ResourceManager::getShaderProgram("light_shader");
 	if (!pLightSourceShaderProgram->isCompiled())
 	{
 		return false;
 	}
+    m_pLightObj = std::make_shared<LightBase>(pCubePositionsVBO, pCubeIndexBuffer);
 
     Renderer_OpenGL::EnableDepthTesting();
     while (!m_bCloseWindow)

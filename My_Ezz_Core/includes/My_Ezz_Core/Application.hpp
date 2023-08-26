@@ -2,7 +2,11 @@
 #include <memory>
 #include "My_Ezz_Core/Event.hpp"
 #include "My_Ezz_Core/Camera.hpp"
+#include "My_Ezz_Core/Interfaces.hpp"
 
+#include "My_Ezz_Core/Objects/Object.hpp"
+#include "My_Ezz_Core/Objects/LightBase.hpp"
+#include "My_Ezz_Core/Interfaces.hpp"
 namespace My_Ezz
 {
 	class Application
@@ -37,6 +41,7 @@ namespace My_Ezz
 		std::unique_ptr<class Window> m_window;
 		EventDispatcher m_eventDispatcher;
 		bool m_bCloseWindow = false;
-
+		std::vector<std::shared_ptr<Object>> m_vDrawingObjects;
+		std::shared_ptr<LightBase> m_pLightObj;
 	};
 }
