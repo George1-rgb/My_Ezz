@@ -26,8 +26,11 @@ namespace My_Ezz
 	public:
 		ITransforming() {}
 		virtual ~ITransforming() {}
-		virtual void Rotate(const glm::quat& qQuat) = 0;
+		virtual void Rotate(const glm::vec3& vRotation) = 0;
 		virtual void Translate(const glm::vec3& vTraslate) = 0;
 		virtual void Scale(const double& dScale) = 0;
+		virtual void SetPosition(const glm::vec3& vPosition) = 0;
+		virtual void SetRotation(const glm::vec3& vRotation) = 0;
+		virtual void SetScale(const double& dScale) = 0;
 	};
 }

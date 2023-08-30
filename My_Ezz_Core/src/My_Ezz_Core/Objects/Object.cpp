@@ -10,14 +10,26 @@
 namespace My_Ezz
 {
 	Object::Object()
-		: m_pVAO(std::make_unique<VertexArray>())
+		: m_pVAO(std::make_unique<VertexArray>()),
+		  m_dScale(1.0f),
+		  m_pTexture(nullptr),
+		  m_mProjectionMatrix(1.0f),
+		  m_mViewMatrix(1.0f),
+		  m_vPosition(1.0f),
+		  m_vRotation(0.0f)
 	{
 
 	}
 
 
 	Object::Object(std::shared_ptr<VertexBuffer> m_pPositions, std::shared_ptr<IndexBuffer> m_pIndexes)
-		: m_pVAO(std::make_shared<VertexArray>())
+		: m_pVAO(std::make_shared<VertexArray>()),
+		  m_dScale(1.0f),
+		  m_pTexture(nullptr),
+		  m_mProjectionMatrix(1.0f),
+		  m_mViewMatrix(1.0f),
+		  m_vPosition(0.0f),
+		  m_vRotation(0.0f)
 	{
 		m_pVAO->addVertexBuffer(*m_pPositions);
 		m_pVAO->setIndexBuffer(*m_pIndexes);
@@ -32,7 +44,10 @@ namespace My_Ezz
 	void Object::Draw(std::shared_ptr<ShaderProgram> pShaderProgram)
 	{
 		glm::mat4 modelMatrix = glm::mat4(1.0f);
-		modelMatrix = glm::translate(modelMatrix, m_vTraslation);
+		modelMatrix = glm::translate(modelMatrix, m_vPosition);
+		modelMatrix = glm::mat4_cast(glm::qua(glm::radians(m_vRotation))) * modelMatrix;
+		modelMatrix = glm::scale(modelMatrix, glm::vec3(m_dScale));
+
 		const glm::mat4 modelViewMatrix = m_mViewMatrix * modelMatrix;
 		pShaderProgram->setMatrix4("modelViewMatrix", modelViewMatrix);
 
@@ -51,19 +66,34 @@ namespace My_Ezz
 		m_mViewMatrix = mViewMatrix;
 	}
 
-	void Object::Rotate(const glm::quat& qQuat)
+	void Object::Rotate(const glm::vec3& vRotation)
 	{
-		m_qQuaternion = qQuat * m_qQuaternion;
+		m_vRotation += vRotation;
 	}
 
 	void Object::Translate(const glm::vec3& vTraslate)
 	{
-		m_vTraslation = vTraslate;
+		m_vPosition += vTraslate;
 	}
 
 	void Object::Scale(const double& dScale)
 	{
 		m_dScale *= dScale;
+	}
+
+	void Object::SetPosition(const glm::vec3& vPosition)
+	{
+		m_vPosition = vPosition;
+	}
+
+	void Object::SetRotation(const glm::vec3& vRotation)
+	{
+		m_vRotation = vRotation;
+	}
+
+	void Object::SetScale(const double& dScale)
+	{
+		m_dScale = dScale;
 	}
 
 }

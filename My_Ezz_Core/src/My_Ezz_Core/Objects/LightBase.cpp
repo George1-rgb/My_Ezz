@@ -24,7 +24,10 @@ namespace My_Ezz
 	void LightBase::Draw(std::shared_ptr<ShaderProgram> pShaderProgram)
 	{
 		glm::mat4 mModelMatrix(1.0f);
-		mModelMatrix = glm::translate(mModelMatrix, m_vTraslation);
+		mModelMatrix = glm::translate(mModelMatrix, m_vPosition);
+		mModelMatrix = glm::mat4_cast(glm::qua(glm::radians(m_vRotation))) * mModelMatrix;
+		mModelMatrix = glm::scale(mModelMatrix, glm::vec3(m_dScale));
+
 		glm::mat4 mvpMatrix = m_mProjectionMatrix * m_mViewMatrix * mModelMatrix;
 		pShaderProgram->setMatrix4("mvpMatrix", mvpMatrix);
 		pShaderProgram->setVec3("light_color", m_vLightSourceColor);

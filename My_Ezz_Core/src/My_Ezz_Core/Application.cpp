@@ -191,7 +191,7 @@ void Application::draw()
 	//light source
 	{
 		pLightSourceShaderProgram->bind();
-		m_pLightObj->Translate(glm::vec3(fLightSourcePosition[0], fLightSourcePosition[1], fLightSourcePosition[2]));
+        m_pLightObj->SetPosition(glm::vec3(fLightSourcePosition[0], fLightSourcePosition[1], fLightSourcePosition[2]));
 		m_pLightObj->SetShaderMatrixs(camera.getProjectionMatrix(), camera.getViewMatrix());
 		m_pLightObj->SetColor(glm::vec3(fLightSourceColor[0], fLightSourceColor[1], fLightSourceColor[2]));
 		m_pLightObj->Draw(pLightSourceShaderProgram);
@@ -210,7 +210,7 @@ void Application::draw()
 	for (const glm::vec3 curPos : positionsCubes)
 	{
         m_vDrawingObjects[count]->SetShaderMatrixs(camera.getProjectionMatrix(), camera.getViewMatrix());
-        m_vDrawingObjects[count]->Translate(curPos);
+        m_vDrawingObjects[count]->SetPosition(curPos);
         m_vDrawingObjects[count]->Draw(pShaderProgram);
         count++;
 	}
@@ -328,6 +328,8 @@ int Application::start(unsigned int widnow_width, unsigned int widnow_height, co
     {
         m_vDrawingObjects.push_back(std::make_shared<Object>(pCubePositionsVBO, pCubeIndexBuffer));
     }
+    m_vDrawingObjects[1]->SetRotation(glm::vec3(45.0f, 45.0f, 0.0f));
+    m_vDrawingObjects[1]->SetScale(0.5f);
 
     // --------//
     //--------------------------------------------------------------//
@@ -338,7 +340,6 @@ int Application::start(unsigned int widnow_width, unsigned int widnow_height, co
 		return false;
 	}
     m_pLightObj = std::make_shared<LightBase>(pCubePositionsVBO, pCubeIndexBuffer);
-
     Renderer_OpenGL::EnableDepthTesting();
     while (!m_bCloseWindow)
     {
