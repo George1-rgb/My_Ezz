@@ -2,12 +2,25 @@
 #include "My_Ezz_Multimedia/AudioBase.hpp"
 #include "My_Ezz_Logger/Log.hpp"
 #include "My_Ezz_Core/Rendering/OpenGL/ShaderProgram.hpp"
+#include "My_Ezz_Core/Objects/Object.hpp"
+#include "My_Ezz_Core/Objects/LightBase.hpp"
+#include "My_Ezz_Core/Objects/Mesh/BaseMesh.hpp"
+#include "My_Ezz_Core/Objects/Mesh/LightMesh.hpp"
+
+
+#include "My_Ezz_Core/Rendering/OpenGL/VertexBuffer.hpp"
+#include "My_Ezz_Core/Rendering/OpenGL/VertexArray.hpp"
+#include "My_Ezz_Core/Rendering/OpenGL/IndexBuffer.hpp"
+#include "My_Ezz_Core/Rendering/OpenGL/Texture2D.hpp"
 //#include <rapidjson/document.h>
 //#include <rapidjson/error/en.h>
 #include <vector>
 #include <sstream>
 #include <fstream>
 #include <iostream>
+#include <regex>
+
+#include <GLFW/glfw3.h>
 //#define STB_IMAGE_IMPLEMENTATION
 //#define STBI_ONLY_PNG
 //#include "stb_image.h"
@@ -16,6 +29,8 @@
 std::string ResourceManager::path;
 ResourceManager::SoundsMap  ResourceManager::m_sounds;
 ResourceManager::ShaderProgramsMap  ResourceManager::m_shadersPrograms;
+ResourceManager::ObjectsMap  ResourceManager::m_objects;
+ResourceManager::TexturesMap  ResourceManager::m_textures;
 
 void ResourceManager::unloadAllResources()
 {
@@ -42,6 +57,15 @@ std::string ResourceManager::getFileString(const std::string& ralativeFilePath)
 	std::stringstream buffer;
 	buffer << file.rdbuf();
 	return buffer.str();
+}
+
+std::vector<std::string> ResourceManager::split(const std::string& strInput, const std::string& strRegex)
+{
+	std::regex re(strRegex);
+	std::sregex_token_iterator
+		first{ strInput.begin(), strInput.end(), re, -1 },
+		last;
+	return { first, last };
 }
 
 std::int32_t convert_to_int(char* buffer, std::size_t len)
@@ -287,6 +311,173 @@ std::shared_ptr<My_Ezz::AudioBase> ResourceManager::getSound(const std::string& 
 	else
 	{
 		//cerr << "Can't find the sprite: " << soundName << endl;
+		return nullptr;
+	}
+}
+
+std::shared_ptr<My_Ezz::Object> ResourceManager::loadObject(const std::string& strObjectName, const std::string& strObjectPath, EObjectType eType)
+{
+	std::ifstream file;
+	file.open(path + "/" + strObjectPath.c_str(), std::ios::in, std::ios::binary);
+	if (!file.is_open())
+	{
+		return nullptr;
+	}
+
+	std::vector<glm::vec3> coords;
+	std::vector<glm::vec2> textCoords;
+	std::vector<glm::vec3> normals;
+
+	std::shared_ptr<My_Ezz::VertexBuffer> vertexes;
+	std::shared_ptr<My_Ezz::IndexBuffer> indexes;
+	std::shared_ptr<My_Ezz::Object> object;
+	std::shared_ptr<My_Ezz::BaseMesh> pMesh;
+	std::string strMtlName;
+
+	std::string line;
+
+	std::vector<GLfloat> vertBuffer;
+	std::vector<GLint> indexBuffer;
+
+	while (std::getline(file, line))
+	{
+		std::vector<std::string> list = split(line, " ");
+
+		if (list[0] == "#")
+		{
+			continue;
+		}
+		else if (list[0] == "mtllib")
+		{
+			continue;
+		}
+		else if (list[0] == "v")
+		{
+			coords.push_back(glm::vec3(std::stod(list[1]), std::stod(list[2]), std::stod(list[3])));
+			continue;
+		}
+		else if (list[0] == "vt")
+		{
+			textCoords.push_back(glm::vec2(std::stod(list[1]), std::stod(list[2])));
+			continue;
+		}
+		else if (list[0] == "vn")
+		{
+			normals.push_back(glm::vec3(std::stod(list[1]), std::stod(list[2]), std::stod(list[3])));
+			continue;
+		}
+		else if (list[0] == "f")
+		{
+			for (int i = 1; i <= 3; i++)
+			{
+				std::vector<std::string> vert = split(list[i], "/");
+
+				glm::vec3 tmpCoords = coords[std::stol(vert[0]) - 1];
+				vertBuffer.push_back(tmpCoords.x);
+				vertBuffer.push_back(tmpCoords.y);
+				vertBuffer.push_back(tmpCoords.z);
+
+				glm::vec3 tmpNormals = normals[std::stol(vert[2]) - 1];
+				vertBuffer.push_back(tmpNormals.x);
+				vertBuffer.push_back(tmpNormals.y);
+				vertBuffer.push_back(tmpNormals.z);
+
+				glm::vec2 tmpTextures = textCoords[std::stol(vert[1]) - 1];
+				vertBuffer.push_back(tmpTextures.x);
+				vertBuffer.push_back(tmpTextures.y);
+
+				indexBuffer.push_back(indexBuffer.size());
+			}
+			continue;
+		}
+
+	}
+	
+	file.close();
+
+	My_Ezz::BufferLayout bufferLayout_2vec3_vec2
+	{
+		My_Ezz::ShaderDataType::Float3,
+		My_Ezz::ShaderDataType::Float3,
+		My_Ezz::ShaderDataType::Float2
+	};
+
+	vertexes = std::make_shared<My_Ezz::VertexBuffer>(vertBuffer.data(), vertBuffer.size()*sizeof(GLfloat), bufferLayout_2vec3_vec2);
+	indexes = std::make_shared<My_Ezz::IndexBuffer>(indexBuffer.data(), indexBuffer.size());
+	if (eType == EObjectType::kBase)
+	{
+		pMesh = std::make_shared<My_Ezz::BaseMesh>(vertexes, indexes);
+		object = std::make_shared<My_Ezz::Object>();
+	}
+	else if (eType == EObjectType::kLight)
+	{
+		pMesh = std::make_shared<My_Ezz::LightMesh>(vertexes, indexes);
+		object = std::make_shared<My_Ezz::LightBase>();
+	}
+	object->SetMesh(pMesh);
+	m_objects.emplace(strObjectName, object);
+
+	return object;
+
+}
+
+std::shared_ptr<My_Ezz::Object> ResourceManager::getObject(const std::string& strObjectName)
+{
+	ObjectsMap::const_iterator it = m_objects.find(strObjectName);
+	if (it != m_objects.end())
+	{
+		return it->second;
+	}
+	else
+	{
+		return nullptr;
+	}
+}
+
+static unsigned long long getStreamSize(std::fstream& is)
+{
+	std::streampos savePos = is.tellg();
+	is.seekg(0, std::ios::end);
+	std::streampos endPos = is.tellg();
+	is.seekg(savePos);
+	return (std::streampos)(endPos - savePos);
+}
+
+std::shared_ptr<My_Ezz::Texture2D> ResourceManager::loadTexture(const std::string& strTextureName, const std::string& strTexturePath)
+{
+	std::shared_ptr<My_Ezz::Texture2D> texure;
+	std::fstream strm;
+	strm.open(strTexturePath, std::ios::binary | std::ios::in);
+	if (!strm.is_open())
+		return nullptr;
+	uint64_t size = getStreamSize(strm);
+	char* buffer = new char[size];
+	int i = 0;
+	while (!strm.eof())
+	{
+		strm.get(buffer[i]);
+		++i;
+	}
+	buffer[--i] = '\0';
+	strm.close();
+	
+	//texure = std::make_shared<My_Ezz::Texture2D>(reinterpret_cast<unsigned int*>(buffer), 1000, 1000);
+	m_textures.emplace(strTextureName, texure);
+
+	return texure;
+}
+
+
+
+std::shared_ptr<My_Ezz::Texture2D> ResourceManager::getTexture(const std::string& strTextureName)
+{
+	TexturesMap::const_iterator it = m_textures.find(strTextureName);
+	if (it != m_textures.end())
+	{
+		return it->second;
+	}
+	else
+	{
 		return nullptr;
 	}
 }

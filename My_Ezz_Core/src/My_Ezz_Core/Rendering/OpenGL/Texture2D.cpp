@@ -47,4 +47,10 @@ namespace My_Ezz
 	{
 		glBindTextureUnit(nUnit, m_nID);
 	}
+
+	void Texture2D::unbind(const unsigned int nUnit) const
+	{
+		glBindTextureUnit(nUnit, 0);
+	}
+
 }

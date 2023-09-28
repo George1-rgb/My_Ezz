@@ -32,6 +32,7 @@ namespace My_Ezz
 		Camera camera{glm::vec3(-5.0f, 0.0f, 0.0f)};
 		float fLightSourcePosition[3] = { 0.0f, 0.0f, 0.0f };
 		float fLightSourceColor[3] = { 1.0f, 1.0f, 1.0f };
+		float fAngles[3] = { 0.0f, 0.0f, 0.0f };
 		float fAmbientFactor = 0.1f;
 		float fDiffuseFactor = 1.f;
 		float fSpecularFactor = 0.5f;
@@ -43,5 +44,7 @@ namespace My_Ezz
 		bool m_bCloseWindow = false;
 		std::vector<std::shared_ptr<Object>> m_vDrawingObjects;
 		std::shared_ptr<LightBase> m_pLightObj;
+
+		void timer();
 	};
 }

@@ -14,7 +14,7 @@ namespace My_Ezz
 		Texture2D(Texture2D&& texture) noexcept;
 
 		void bind(const unsigned int nUnit) const;
-
+		void unbind(const unsigned int nUnit) const;
 
 	private:
 		unsigned int m_nID = 0;

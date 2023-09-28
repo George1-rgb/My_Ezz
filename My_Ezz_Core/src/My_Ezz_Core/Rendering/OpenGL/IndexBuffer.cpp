@@ -25,6 +25,7 @@ IndexBuffer::IndexBuffer(const void* _data, const size_t _count, const VertexBuf
 	glGenBuffers(1, &m_id);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_id);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, _count * sizeof(GLuint), _data, usageToGLenum(_usage));
+	GLenum e = glGetError();
 }
 
 IndexBuffer::~IndexBuffer()

@@ -56,6 +56,7 @@ void VertexArray::addVertexBuffer(const VertexBuffer& _vertexBuffer)
 
 		++m_countOfElements;
 	}
+
 }
 
 void VertexArray::setIndexBuffer(const IndexBuffer& _indexBuffer)
@@ -63,8 +64,8 @@ void VertexArray::setIndexBuffer(const IndexBuffer& _indexBuffer)
 	bind();
 	_indexBuffer.bind();
 	m_indecesCount = _indexBuffer.getCount();
-
-
+	unbind();
+	_indexBuffer.unbind();
 }
 
 void VertexArray::bind() const
@@ -74,5 +75,6 @@ void VertexArray::bind() const
 
 void VertexArray::unbind()
 {
+	
 	glBindVertexArray(0);
 }

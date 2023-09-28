@@ -1,7 +1,7 @@
 #pragma once
 #include <glm/gtx/quaternion.hpp>
 #include <glm/vec3.hpp>
-
+#include <string>
 
 namespace My_Ezz
 {
@@ -16,7 +16,7 @@ namespace My_Ezz
 	public:
 		IDrawing() {}
 		virtual ~IDrawing() {}
-		virtual void LoadObject(std::shared_ptr<VertexBuffer> m_pPositions, std::shared_ptr<IndexBuffer> m_pIndexes) = 0;
+		virtual void LoadMesh(std::shared_ptr<VertexBuffer> m_pPositions, std::shared_ptr<IndexBuffer> m_pIndexes) = 0;
 		virtual void Draw(std::shared_ptr<ShaderProgram> pShaderProgram) = 0;
 		virtual void SetShaderMatrixs(const glm::mat4& mProjectionMatrix, const glm::mat4& mViewMatrix) = 0;
 	};

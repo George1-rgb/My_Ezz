@@ -173,6 +173,7 @@ class My_Ezz_Editor : public My_Ezz::Application
 		ImGui::SliderFloat("Diffuse factor", &fDiffuseFactor, 0.0f, 1.0f);
 		ImGui::SliderFloat("Specular factor", &fSpecularFactor, 0.0f, 1.0f);
 		ImGui::SliderFloat("Shininess", &fShininess, 1.0f, 128.0f);
+		ImGui::SliderFloat3("TEST(Box rotation)", fAngles, -180.0f, 180.0f);
 
 		if (ImGui::SliderFloat3("Camera position", cameraPosition, -10.0f, 10.0f))
 		{

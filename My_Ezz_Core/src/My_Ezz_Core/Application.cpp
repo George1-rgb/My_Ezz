@@ -21,11 +21,16 @@
 #include <glm/ext/matrix_transform.hpp>
 #include <glm/trigonometric.hpp>
 
+#include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <iostream>
 #include "My_Ezz_Core/ResourceManager.hpp"
 #include "My_Ezz_Multimedia/AudioBase.hpp"
 #include "My_Ezz_Multimedia/Multimedia.hpp"
+#include "My_Ezz_Core/Objects/Mesh/BaseMesh.hpp"
+
+#include <chrono>
+#include <thread>
 
 using namespace My_Ezz;
 
@@ -160,6 +165,9 @@ std::shared_ptr<IndexBuffer> pCubeIndexBuffer;
 std::shared_ptr<Texture2D> pTexture_Smile;
 std::shared_ptr<Texture2D> pTexture_Quads;
 std::shared_ptr<VertexArray> pVAO_1;
+std::shared_ptr<Object> objPhiramide;
+std::shared_ptr<Object> objSphere;
+std::shared_ptr<Object> objCube;
 
 float m_backgroundColor[4] = { 0.33f, 0.33f, 0.33f, 0.0f };
 
@@ -182,37 +190,64 @@ Application::~Application()
     LOG_INFO("Closing Application");
 }
 
+
+void Application::timer() {
+
+	// Infinite while loop.
+    std::chrono::milliseconds timespan(20); // or whatever
+	while (true) {
+        fAngles[0] += 1.0f;
+        fAngles[1] += 1.0f;
+        fAngles[2] += 1.0f;
+
+        if (fAngles[0] >= 360.0f)
+            fAngles[0] = 0;
+		if (fAngles[1] >= 360.0f)
+			fAngles[1] = 0;
+		if (fAngles[2] >= 360.0f)
+			fAngles[2] = 0;
+		std::this_thread::sleep_for(timespan);
+	}
+}
+
 void Application::draw()
 {
 	//----------------------------------------//
 	Renderer_OpenGL::setClearColor(m_backgroundColor[0], m_backgroundColor[1], m_backgroundColor[2], m_backgroundColor[3]);
 	Renderer_OpenGL::clear();
 
-	//light source
+	////light source
 	{
 		pLightSourceShaderProgram->bind();
-        m_pLightObj->SetPosition(glm::vec3(fLightSourcePosition[0], fLightSourcePosition[1], fLightSourcePosition[2]));
-		m_pLightObj->SetShaderMatrixs(camera.getProjectionMatrix(), camera.getViewMatrix());
+		m_pLightObj->SetPosition(glm::vec3(fLightSourcePosition[0], fLightSourcePosition[1], fLightSourcePosition[2]));
+		m_pLightObj->GetMesh()->SetShaderMatrixs(camera.getProjectionMatrix(), camera.getViewMatrix());
 		m_pLightObj->SetColor(glm::vec3(fLightSourceColor[0], fLightSourceColor[1], fLightSourceColor[2]));
+		m_pLightObj->SetScale(0.2);
 		m_pLightObj->Draw(pLightSourceShaderProgram);
 	}
-
-	pShaderProgram->bind();
-	
-	pShaderProgram->setVec3("light_position_eye", glm::vec3(camera.getViewMatrix() * glm::vec4(fLightSourcePosition[0], fLightSourcePosition[1], fLightSourcePosition[2], 1.f)));
-	pShaderProgram->setVec3("light_color", glm::vec3(fLightSourceColor[0], fLightSourceColor[1], fLightSourceColor[2]));
-	pShaderProgram->setFloat("ambient_factor", fAmbientFactor);
-	pShaderProgram->setFloat("diffuse_factor", fDiffuseFactor);
-	pShaderProgram->setFloat("specular_factor", fSpecularFactor);
-	pShaderProgram->setFloat("shininess", fShininess);
-    //cubes
-    int count = 0;
-	for (const glm::vec3 curPos : positionsCubes)
 	{
-        m_vDrawingObjects[count]->SetShaderMatrixs(camera.getProjectionMatrix(), camera.getViewMatrix());
-        m_vDrawingObjects[count]->SetPosition(curPos);
-        m_vDrawingObjects[count]->Draw(pShaderProgram);
-        count++;
+		pShaderProgram->bind();
+		pShaderProgram->setVec3("light_position_eye", glm::vec3(camera.getViewMatrix() * glm::vec4(fLightSourcePosition[0], fLightSourcePosition[1], fLightSourcePosition[2], 1.f)));
+		pShaderProgram->setVec3("light_color", glm::vec3(fLightSourceColor[0], fLightSourceColor[1], fLightSourceColor[2]));
+		pShaderProgram->setFloat("ambient_factor", fAmbientFactor);
+		pShaderProgram->setFloat("diffuse_factor", fDiffuseFactor);
+		pShaderProgram->setFloat("specular_factor", fSpecularFactor);
+		pShaderProgram->setFloat("shininess", fShininess);
+
+		objSphere->GetMesh()->SetShaderMatrixs(camera.getProjectionMatrix(), camera.getViewMatrix());
+		objSphere->SetPosition(glm::vec3(-5.0, 0.f, 0.f));
+		objSphere->SetRotation(glm::vec3(fAngles[0], fAngles[1], fAngles[2]));
+		objSphere->Draw(pShaderProgram);
+
+		objPhiramide->GetMesh()->SetShaderMatrixs(camera.getProjectionMatrix(), camera.getViewMatrix());
+		objPhiramide->SetPosition(glm::vec3(5.0, 0.f, 0.f));
+		objPhiramide->SetRotation(glm::vec3(fAngles[0], fAngles[1], fAngles[2]));
+		objPhiramide->Draw(pShaderProgram);
+
+		objCube->GetMesh()->SetShaderMatrixs(camera.getProjectionMatrix(), camera.getViewMatrix());
+		objCube->SetPosition(glm::vec3(5.0, 5.f, 0.f));
+		objCube->SetRotation(glm::vec3(fAngles[0], fAngles[1], fAngles[2]));
+		objCube->Draw(pShaderProgram);
 	}
 
 	UIModule::onWindowUpdateBegin();
@@ -289,21 +324,17 @@ int Application::start(unsigned int widnow_width, unsigned int widnow_height, co
         });
 
 
-    const unsigned int width = 1000;
-    const unsigned int height = 1000;
-    const unsigned int channels = 3;
+	const unsigned int width = 1000;
+	const unsigned int height = 1000;
+	const unsigned int channels = 3;
 
-    auto* data = new unsigned char[width * height * channels];
+	auto* data = new unsigned char[width * height * channels];
 
-    GenerateSmileTexture(data, width, height);
-    pTexture_Smile = std::make_unique<Texture2D>(data, width, height);
-    pTexture_Smile->bind(0);
+	GenerateSmileTexture(data, width, height);
+	pTexture_Smile = std::make_unique<Texture2D>(data, width, height);
+	pTexture_Smile->bind(0);
 
-    GenerateQuadsTexture(data, width, height);
-    pTexture_Quads = std::make_unique<Texture2D>(data, width, height);
-    pTexture_Quads->bind(1);
-
-    delete[] data;
+	delete[] data;
 
 
     //-----------------------------------------------------//
@@ -314,33 +345,21 @@ int Application::start(unsigned int widnow_width, unsigned int widnow_height, co
     }
 
 
-    BufferLayout bufferLayout_2vec3_vec2
-    {
-        ShaderDataType::Float3,
-        ShaderDataType::Float3,
-        ShaderDataType::Float2
-    };
 
-    pCubePositionsVBO = std::make_shared<VertexBuffer>(positions, sizeof(positions), bufferLayout_2vec3_vec2);
-    pCubeIndexBuffer = std::make_shared<IndexBuffer>(indeces, sizeof(indeces) / sizeof(GLuint));
-    
-    for (const glm::vec3 curPos : positionsCubes)
-    {
-        m_vDrawingObjects.push_back(std::make_shared<Object>(pCubePositionsVBO, pCubeIndexBuffer));
-    }
-    m_vDrawingObjects[1]->SetRotation(glm::vec3(45.0f, 45.0f, 0.0f));
-    m_vDrawingObjects[1]->SetScale(0.5f);
+    objPhiramide = ResourceManager::loadObject("phiramide", "res/objects/phiramid.obj");
+    objSphere = ResourceManager::loadObject("sphere", "res/objects/sphere.obj");
+    objCube = ResourceManager::loadObject("cube", "res/objects/cube.obj");
 
-    // --------//
-    //--------------------------------------------------------------//
     
-    pLightSourceShaderProgram = ResourceManager::getShaderProgram("light_shader");
+	pLightSourceShaderProgram = ResourceManager::getShaderProgram("light_shader");
 	if (!pLightSourceShaderProgram->isCompiled())
 	{
 		return false;
 	}
-    m_pLightObj = std::make_shared<LightBase>(pCubePositionsVBO, pCubeIndexBuffer);
+	m_pLightObj = std::dynamic_pointer_cast<LightBase>(ResourceManager::loadObject("light", "res/objects/cube.obj", ResourceManager::EObjectType::kLight));
     Renderer_OpenGL::EnableDepthTesting();
+	/* std::thread tr([&]() {timer(); });
+	 tr.detach();*/
     while (!m_bCloseWindow)
     {
         draw();

@@ -4,36 +4,31 @@
 
 namespace My_Ezz
 {
-
-	class Object : public IDrawing, public ITransforming
+	class BaseMesh;
+	class Object
 	{
 	public:
 		Object();
-		Object(std::shared_ptr<VertexBuffer> m_pPositions, std::shared_ptr<IndexBuffer> m_pIndexes);
 
 		virtual ~Object() {}
 
-		//IDrawing
-		void LoadObject(std::shared_ptr<VertexBuffer> m_pPositions, std::shared_ptr<IndexBuffer> m_pIndexes) override;
-		void Draw(std::shared_ptr<ShaderProgram> pShaderProgram) override;
-		void SetShaderMatrixs(const glm::mat4& mProjectionMatrix, const glm::mat4& mViewMatrix) override;
+		virtual void Rotate(const glm::vec3& vRotation);
+		virtual void Translate(const glm::vec3& vTraslate);
+		virtual void Scale(const double& dScale);
+		virtual void SetPosition(const glm::vec3& vPosition);
+		virtual void SetRotation(const glm::vec3& vRotation);
+		virtual void SetScale(const double& dScale);
 
-		//ITransforming
-		virtual void Rotate(const glm::vec3& vRotation) override;
-		virtual void Translate(const glm::vec3& vTraslate) override;
-		virtual void Scale(const double& dScale) override;
-		virtual void SetPosition(const glm::vec3& vPosition) override;
-		virtual void SetRotation(const glm::vec3& vRotation) override;
-		virtual void SetScale(const double& dScale) override;
+		void SetTexture(std::shared_ptr<Texture2D> pTexture);
+
+		void SetMesh(std::shared_ptr<BaseMesh> pMesh);
+		std::shared_ptr<BaseMesh> GetMesh() const;
+		void Draw(std::shared_ptr<ShaderProgram> pShaderProgram);
+
 	protected:
 		std::shared_ptr<Texture2D> m_pTexture;
+		std::shared_ptr<BaseMesh> m_pMesh;
 
-		std::shared_ptr<VertexArray> m_pVAO;
-		glm::mat4 m_mProjectionMatrix;
-		glm::mat4 m_mViewMatrix;
-
-		glm::vec3 m_vPosition;
-		double m_dScale;
-		glm::vec3 m_vRotation;
+		static int m_nCounter;
 	};
 }

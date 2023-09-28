@@ -12,6 +12,8 @@ includes/My_Ezz_Core/ResourceManager.hpp
 includes/My_Ezz_Core/Interfaces.hpp
 includes/My_Ezz_Core/Objects/Object.hpp
 includes/My_Ezz_Core/Objects/LightBase.hpp
+includes/My_Ezz_Core/Objects/Mesh/BaseMesh.hpp
+includes/My_Ezz_Core/Objects/Mesh/LightMesh.hpp
 )
 
 set(CORE_PRIVATE_INCLUDES
@@ -40,6 +42,8 @@ src/My_Ezz_Core/Modules/UIModule.cpp
 src/My_Ezz_Core/ResourceManager.cpp
 src/My_Ezz_Core/Objects/Object.cpp
 src/My_Ezz_Core/Objects/LightBase.cpp
+src/My_Ezz_Core/Objects/Mesh/BaseMesh.cpp
+src/My_Ezz_Core/Objects/Mesh/LightMesh.cpp
 )
 
 set(CORE_ALL_SOURCES
