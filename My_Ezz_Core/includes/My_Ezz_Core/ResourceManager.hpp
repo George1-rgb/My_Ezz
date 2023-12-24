@@ -2,14 +2,17 @@
 #include <memory>
 #include <map>
 #include <vector>
-
+#include "My_Ezz_Core/Objects/Image/Texture2D.hpp"
 namespace My_Ezz
 {
 	class AudioBase;
 	class ShaderProgram;
 	class Object;
 	class Texture2D;
+	class Material;
+	class MaterialLibrary;
 }
+
 
 class ResourceManager
 {
@@ -43,8 +46,10 @@ public:
 	static std::shared_ptr<My_Ezz::Object> loadObject(const std::string& strObjectName, const std::string& strObjectPath, EObjectType eType = EObjectType::kBase);
 	static std::shared_ptr<My_Ezz::Object> getObject(const std::string& strObjectName);
 
-	static std::shared_ptr<My_Ezz::Texture2D> loadTexture(const std::string& strTextureName, const std::string& strTexturePath);
+	static std::shared_ptr<My_Ezz::Texture2D> loadTexture(const std::string& strTextureName, const std::string& strTexturePath, My_Ezz::TextureType textureType = My_Ezz::TextureType::kDiffuse);
 	static std::shared_ptr<My_Ezz::Texture2D> getTexture(const std::string& strTextureName);
+
+	static std::shared_ptr<My_Ezz::Material> loadMaterial(const std::string& strMaterialPath, std::shared_ptr<My_Ezz::MaterialLibrary> pMaterialLib);
 
 private:
 	static std::string getFileString(const std::string& ralativeFilePath);

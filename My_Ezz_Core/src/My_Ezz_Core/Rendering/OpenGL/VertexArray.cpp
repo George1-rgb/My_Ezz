@@ -37,7 +37,6 @@ VertexArray::VertexArray(VertexArray&& _vertexArray) noexcept
 void VertexArray::addVertexBuffer(const VertexBuffer& _vertexBuffer)
 {
 	bind();
-
 	for (const BufferElement& currentElement : _vertexBuffer.getLayout().getElements())
 	{
 		glEnableVertexAttribArray(m_countOfElements);
@@ -56,7 +55,6 @@ void VertexArray::addVertexBuffer(const VertexBuffer& _vertexBuffer)
 
 		++m_countOfElements;
 	}
-
 }
 
 void VertexArray::setIndexBuffer(const IndexBuffer& _indexBuffer)

@@ -2,7 +2,8 @@
 layout(location = 0) in vec3 vertex_position;
 layout(location = 1) in vec3 vertex_normal;
 layout(location = 2) in vec2 texture_coord;
-
+layout(location = 3) in vec3 vertex_tangent;
+layout(location = 4) in vec3 vertex_bitangent;
 
 uniform mat4 modelViewMatrix;
 uniform mat4 mvpMatrix;

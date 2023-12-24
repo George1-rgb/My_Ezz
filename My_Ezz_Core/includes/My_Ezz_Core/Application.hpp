@@ -19,7 +19,7 @@ namespace My_Ezz
 		Application& operator=(const Application&) = delete;
 		Application& operator=(Application&&) = delete;
 
-		virtual int start(unsigned int widnow_width, unsigned int widnow_height, const char* title);
+		virtual int start(const char* title, bool bAutoSize, unsigned int widnow_width = 0, unsigned int widnow_height = 0);
 		void close() { m_bCloseWindow = true; }
 		virtual void on_update() {}
 
@@ -39,6 +39,8 @@ namespace My_Ezz
 		float fShininess = 32.f;
 	private:
 		void draw();
+		void InitCallbacks();
+		bool InitShaders();
 		std::unique_ptr<class Window> m_window;
 		EventDispatcher m_eventDispatcher;
 		bool m_bCloseWindow = false;

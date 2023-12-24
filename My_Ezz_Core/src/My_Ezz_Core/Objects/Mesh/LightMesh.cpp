@@ -31,8 +31,8 @@ namespace My_Ezz
 		mModelMatrix = glm::scale(mModelMatrix, glm::vec3(m_dScale));
 
 		glm::mat4 mvpMatrix = m_mProjectionMatrix * m_mViewMatrix * mModelMatrix;
-		pShaderProgram->setMatrix4("mvpMatrix", mvpMatrix);
-		pShaderProgram->setVec3("light_color", m_vLightSourceColor);
+		pShaderProgram->setUniformValue("mvpMatrix", mvpMatrix);
+		pShaderProgram->setUniformValue("light_color", m_vLightSourceColor);
 
 		Renderer_OpenGL::draw(*m_pVAO);
 	}

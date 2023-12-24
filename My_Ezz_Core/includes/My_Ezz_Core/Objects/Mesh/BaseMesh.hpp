@@ -4,7 +4,7 @@
 
 namespace My_Ezz
 {
-
+	class Material;
 	class BaseMesh: public IDrawing, public ITransforming
 	{
 	public:
@@ -26,6 +26,8 @@ namespace My_Ezz
 		virtual void SetRotation(const glm::vec3& vRotation) override;
 		virtual void SetScale(const double& dScale) override;
 
+
+		void SetMaterial(std::shared_ptr<Material> pMaterial);
 	protected:
 		std::shared_ptr<VertexArray> m_pVAO;
 		glm::mat4 m_mProjectionMatrix;
@@ -34,5 +36,7 @@ namespace My_Ezz
 		glm::vec3 m_vPosition;
 		double m_dScale;
 		glm::vec3 m_vRotation;
+
+		std::shared_ptr<Material> m_pMaterial;
 	};
 }

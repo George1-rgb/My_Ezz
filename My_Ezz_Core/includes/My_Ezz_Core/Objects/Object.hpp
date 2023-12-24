@@ -1,10 +1,12 @@
 #pragma once
 #include <memory>
+#include <vector>
 #include "../Interfaces.hpp"
 
 namespace My_Ezz
 {
 	class BaseMesh;
+	class MaterialLibrary;
 	class Object
 	{
 	public:
@@ -21,14 +23,15 @@ namespace My_Ezz
 
 		void SetTexture(std::shared_ptr<Texture2D> pTexture);
 
-		void SetMesh(std::shared_ptr<BaseMesh> pMesh);
-		std::shared_ptr<BaseMesh> GetMesh() const;
+		void AddMesh(std::shared_ptr<BaseMesh> pMesh);
 		void Draw(std::shared_ptr<ShaderProgram> pShaderProgram);
-
+		void SetShaderMatrix(const glm::mat4& mProjectionMatrix, const glm::mat4& mViewMatrix);
+		std::shared_ptr<MaterialLibrary> GetMtlLib() const;
 	protected:
 		std::shared_ptr<Texture2D> m_pTexture;
-		std::shared_ptr<BaseMesh> m_pMesh;
+		std::shared_ptr<MaterialLibrary> m_pMtlLib;
+		std::vector<std::shared_ptr<BaseMesh>> m_vMeshes;
 
-		static int m_nCounter;
+
 	};
 }

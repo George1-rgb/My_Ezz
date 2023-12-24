@@ -10,8 +10,8 @@
 
 using namespace My_Ezz;
 
-Window::Window(std::string title, const unsigned int& width, const unsigned int& height)
-    : m_data({ std::move(title), width, height })
+Window::Window(std::string title, bool bAutoSize, const unsigned int& width, const unsigned int& height)
+    : m_data({ std::move(title), width, height }), m_bAutoSize(bAutoSize)
 {
 	int resultCode = init();
 
@@ -45,6 +45,15 @@ int Window::init()
     }
 
     glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
+
+    if (m_bAutoSize)
+    {
+        GLFWmonitor* monitor = glfwGetPrimaryMonitor();//в переменную GLFWmonitor записывается информация первого монитора
+	    const GLFWvidmode* vidmode = glfwGetVideoMode(monitor);
+        m_data.width = vidmode->width;
+        m_data.height = vidmode->height;
+    }
+
     m_window = glfwCreateWindow(m_data.width, m_data.height, m_data.title.c_str(), nullptr, nullptr);
     if (!m_window)
     {

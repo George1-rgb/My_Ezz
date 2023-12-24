@@ -11,9 +11,13 @@ includes/My_Ezz_Core/Input.hpp
 includes/My_Ezz_Core/ResourceManager.hpp
 includes/My_Ezz_Core/Interfaces.hpp
 includes/My_Ezz_Core/Objects/Object.hpp
+includes/My_Ezz_Core/Objects/Material.hpp
+includes/My_Ezz_Core/Objects/MaterialLib.hpp
 includes/My_Ezz_Core/Objects/LightBase.hpp
 includes/My_Ezz_Core/Objects/Mesh/BaseMesh.hpp
 includes/My_Ezz_Core/Objects/Mesh/LightMesh.hpp
+includes/My_Ezz_Core/Objects/Image/Texture2D.hpp
+includes/My_Ezz_Core/Objects/Image/stb_image.h
 )
 
 set(CORE_PRIVATE_INCLUDES
@@ -23,7 +27,6 @@ src/My_Ezz_Core/Rendering/OpenGL/VertexBuffer.hpp
 src/My_Ezz_Core/Rendering/OpenGL/IndexBuffer.hpp
 src/My_Ezz_Core/Rendering/OpenGL/VertexArray.hpp
 src/My_Ezz_Core/Rendering/OpenGL/Renderer_OpenGL.hpp
-src/My_Ezz_Core/Rendering/OpenGL/Texture2D.hpp
 src/My_Ezz_Core/Modules/UIModule.hpp
 )
 
@@ -37,13 +40,15 @@ src/My_Ezz_Core/Rendering/OpenGL/VertexBuffer.cpp
 src/My_Ezz_Core/Rendering/OpenGL/IndexBuffer.cpp
 src/My_Ezz_Core/Rendering/OpenGL/VertexArray.cpp
 src/My_Ezz_Core/Rendering/OpenGL/Renderer_OpenGL.cpp
-src/My_Ezz_Core/Rendering/OpenGL/Texture2D.cpp
 src/My_Ezz_Core/Modules/UIModule.cpp
 src/My_Ezz_Core/ResourceManager.cpp
 src/My_Ezz_Core/Objects/Object.cpp
+src/My_Ezz_Core/Objects/Material.cpp
+src/My_Ezz_Core/Objects/MaterialLib.cpp
 src/My_Ezz_Core/Objects/LightBase.cpp
 src/My_Ezz_Core/Objects/Mesh/BaseMesh.cpp
 src/My_Ezz_Core/Objects/Mesh/LightMesh.cpp
+src/My_Ezz_Core/Objects/Image/Texture2D.cpp
 )
 
 set(CORE_ALL_SOURCES

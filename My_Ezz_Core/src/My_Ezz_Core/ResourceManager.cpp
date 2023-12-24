@@ -11,7 +11,8 @@
 #include "My_Ezz_Core/Rendering/OpenGL/VertexBuffer.hpp"
 #include "My_Ezz_Core/Rendering/OpenGL/VertexArray.hpp"
 #include "My_Ezz_Core/Rendering/OpenGL/IndexBuffer.hpp"
-#include "My_Ezz_Core/Rendering/OpenGL/Texture2D.hpp"
+#include "My_Ezz_Core/Objects/Material.hpp"
+#include "My_Ezz_Core/Objects/MaterialLib.hpp"
 //#include <rapidjson/document.h>
 //#include <rapidjson/error/en.h>
 #include <vector>
@@ -19,11 +20,12 @@
 #include <fstream>
 #include <iostream>
 #include <regex>
-
+#include <iterator>
 #include <GLFW/glfw3.h>
-//#define STB_IMAGE_IMPLEMENTATION
-//#define STBI_ONLY_PNG
-//#include "stb_image.h"
+
+#define STB_IMAGE_IMPLEMENTATION
+#define STBI_ONLY_PNG
+#include "My_Ezz_Core/Objects/Image/stb_image.h"
 
 
 std::string ResourceManager::path;
@@ -317,6 +319,84 @@ std::shared_ptr<My_Ezz::AudioBase> ResourceManager::getSound(const std::string& 
 
 std::shared_ptr<My_Ezz::Object> ResourceManager::loadObject(const std::string& strObjectName, const std::string& strObjectPath, EObjectType eType)
 {
+	struct Helper
+	{
+		static void CalcTBN(std::list<GLfloat>& vertexBuff)
+		{
+			double x, y, z;
+			for (int i = 0; i < vertexBuff.size();)
+			{
+				std::list<GLfloat>::iterator Iter = vertexBuff.begin();
+				std::advance(Iter, i);
+				//point 1
+				x = *Iter;
+				y = *(++Iter);
+				z = *(++Iter);
+				glm::vec3 v1 = glm::vec3(x, y, z);
+				std::advance(Iter, 3);
+				x = *(++Iter);
+				y = *(++Iter);
+				glm::vec2 uv1 = glm::vec2(x, y);
+				//point 2
+				x = *(++Iter);
+				y = *(++Iter);
+				z = *(++Iter);
+				glm::vec3 v2 = glm::vec3(x, y, z);
+				std::advance(Iter, 3);
+				x = *(++Iter);
+				y = *(++Iter);
+				glm::vec2 uv2 = glm::vec2(x, y);
+				//point 3
+				x = *(++Iter);
+				y = *(++Iter);
+				z = *(++Iter);
+				glm::vec3 v3 = glm::vec3(x, y, z);
+				std::advance(Iter, 3);
+				x = *(++Iter);
+				y = *(++Iter);
+				glm::vec2 uv3 = glm::vec2(x, y);
+
+				glm::vec3 deltaPos1 = v2 - v1;
+				glm::vec3 deltaPos2 = v3 - v1;
+
+				glm::vec2 deltaUV1 = uv2 - uv1;
+				glm::vec2 deltaUV2 = uv3 - uv1;
+
+				float r = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV1.y * deltaUV2.x);
+
+				glm::vec3 tangent = (deltaPos1 * deltaUV2.y - deltaPos2 * deltaUV1.y) * r;
+				glm::vec3 bitangent = (deltaPos2 * deltaUV1.x - deltaPos1 * deltaUV2.x) * r;
+				//point 1
+				Iter = vertexBuff.begin();
+				std::advance(Iter, i+8);
+				vertexBuff.emplace(Iter, tangent.x);
+				vertexBuff.emplace(Iter, tangent.y);
+				vertexBuff.emplace(Iter, tangent.z);
+				vertexBuff.emplace(Iter, bitangent.x);
+				vertexBuff.emplace(Iter, bitangent.y);
+				vertexBuff.emplace(Iter, bitangent.z);
+				//point 2
+				std::advance(Iter, 8);
+				vertexBuff.emplace(Iter, tangent.x);
+				vertexBuff.emplace(Iter, tangent.y);
+				vertexBuff.emplace(Iter, tangent.z);
+				vertexBuff.emplace(Iter, bitangent.x);
+				vertexBuff.emplace(Iter, bitangent.y);
+				vertexBuff.emplace(Iter, bitangent.z);
+				//point 3
+				std::advance(Iter, 8);
+				vertexBuff.emplace(Iter, tangent.x);
+				vertexBuff.emplace(Iter, tangent.y);
+				vertexBuff.emplace(Iter, tangent.z);
+				vertexBuff.emplace(Iter, bitangent.x);
+				vertexBuff.emplace(Iter, bitangent.y);
+				vertexBuff.emplace(Iter, bitangent.z);
+				i += 42;
+			}
+		}
+	};
+
+
 	std::ifstream file;
 	file.open(path + "/" + strObjectPath.c_str(), std::ios::in, std::ios::binary);
 	if (!file.is_open())
@@ -330,14 +410,29 @@ std::shared_ptr<My_Ezz::Object> ResourceManager::loadObject(const std::string& s
 
 	std::shared_ptr<My_Ezz::VertexBuffer> vertexes;
 	std::shared_ptr<My_Ezz::IndexBuffer> indexes;
+
 	std::shared_ptr<My_Ezz::Object> object;
+	if (eType == EObjectType::kBase)
+		object = std::make_shared<My_Ezz::Object>();
+	else if (eType == EObjectType::kLight)
+		object = std::make_shared<My_Ezz::LightBase>();
+
 	std::shared_ptr<My_Ezz::BaseMesh> pMesh;
 	std::string strMtlName;
 
 	std::string line;
 
-	std::vector<GLfloat> vertBuffer;
-	std::vector<GLint> indexBuffer;
+	std::list<GLfloat> vertBuffer;
+	std::list<GLint> indexBuffer;
+
+	My_Ezz::BufferLayout bufferLayout_2vec3_vec2
+	{
+		My_Ezz::ShaderDataType::Float3,
+		My_Ezz::ShaderDataType::Float3,
+		My_Ezz::ShaderDataType::Float2,
+		My_Ezz::ShaderDataType::Float3,
+		My_Ezz::ShaderDataType::Float3
+	};
 
 	while (std::getline(file, line))
 	{
@@ -349,6 +444,8 @@ std::shared_ptr<My_Ezz::Object> ResourceManager::loadObject(const std::string& s
 		}
 		else if (list[0] == "mtllib")
 		{
+			std::vector<std::string> localPath = split(strObjectPath, "/");
+			loadMaterial(localPath[0] + "/" + localPath[1] + "/" + list[1], object->GetMtlLib());
 			continue;
 		}
 		else if (list[0] == "v")
@@ -390,35 +487,46 @@ std::shared_ptr<My_Ezz::Object> ResourceManager::loadObject(const std::string& s
 			}
 			continue;
 		}
+		else if (list[0] == "usemtl")
+		{
 
+			if (pMesh)
+			{
+				Helper::CalcTBN(vertBuffer);
+				std::vector<GLfloat> tmpVertBuff{ std::make_move_iterator(std::begin(vertBuffer)), std::make_move_iterator(std::end(vertBuffer))};
+				std::vector<GLint> tmpIndexBuff{ std::make_move_iterator(std::begin(indexBuffer)), std::make_move_iterator(std::end(indexBuffer))};
+				vertexes = std::make_shared<My_Ezz::VertexBuffer>(tmpVertBuff.data(), tmpVertBuff.size() * sizeof(GLfloat), bufferLayout_2vec3_vec2);
+				indexes = std::make_shared<My_Ezz::IndexBuffer>(tmpIndexBuff.data(), tmpIndexBuff.size());
+				pMesh->LoadMesh(vertexes, indexes);
+				pMesh->SetMaterial(object->GetMtlLib()->GetMaterial(strMtlName));
+			}
+			strMtlName = list[1];
+			object->AddMesh(pMesh);
+			if (eType == EObjectType::kBase)
+				pMesh = std::make_shared<My_Ezz::BaseMesh>();
+			else if (eType == EObjectType::kLight)
+				pMesh = std::make_shared<My_Ezz::LightMesh>();
+			vertBuffer.clear();
+			indexBuffer.clear();
+		}
 	}
-	
 	file.close();
 
-	My_Ezz::BufferLayout bufferLayout_2vec3_vec2
+	if (pMesh)
 	{
-		My_Ezz::ShaderDataType::Float3,
-		My_Ezz::ShaderDataType::Float3,
-		My_Ezz::ShaderDataType::Float2
-	};
 
-	vertexes = std::make_shared<My_Ezz::VertexBuffer>(vertBuffer.data(), vertBuffer.size()*sizeof(GLfloat), bufferLayout_2vec3_vec2);
-	indexes = std::make_shared<My_Ezz::IndexBuffer>(indexBuffer.data(), indexBuffer.size());
-	if (eType == EObjectType::kBase)
-	{
-		pMesh = std::make_shared<My_Ezz::BaseMesh>(vertexes, indexes);
-		object = std::make_shared<My_Ezz::Object>();
+		Helper::CalcTBN(vertBuffer);
+		std::vector<GLfloat> tmpVertBuff{ std::make_move_iterator(std::begin(vertBuffer)), std::make_move_iterator(std::end(vertBuffer)) };
+		std::vector<GLint> tmpIndexBuff{ std::make_move_iterator(std::begin(indexBuffer)), std::make_move_iterator(std::end(indexBuffer)) };
+		vertexes = std::make_shared<My_Ezz::VertexBuffer>(tmpVertBuff.data(), tmpVertBuff.size() * sizeof(GLfloat), bufferLayout_2vec3_vec2);
+		indexes = std::make_shared<My_Ezz::IndexBuffer>(tmpIndexBuff.data(), tmpIndexBuff.size());
+		pMesh->LoadMesh(vertexes, indexes);
+		pMesh->SetMaterial(object->GetMtlLib()->GetMaterial(strMtlName));
 	}
-	else if (eType == EObjectType::kLight)
-	{
-		pMesh = std::make_shared<My_Ezz::LightMesh>(vertexes, indexes);
-		object = std::make_shared<My_Ezz::LightBase>();
-	}
-	object->SetMesh(pMesh);
+	object->AddMesh(pMesh);
 	m_objects.emplace(strObjectName, object);
 
 	return object;
-
 }
 
 std::shared_ptr<My_Ezz::Object> ResourceManager::getObject(const std::string& strObjectName)
@@ -443,25 +551,21 @@ static unsigned long long getStreamSize(std::fstream& is)
 	return (std::streampos)(endPos - savePos);
 }
 
-std::shared_ptr<My_Ezz::Texture2D> ResourceManager::loadTexture(const std::string& strTextureName, const std::string& strTexturePath)
+std::shared_ptr<My_Ezz::Texture2D> ResourceManager::loadTexture(const std::string& strTextureName, const std::string& strTexturePath, My_Ezz::TextureType textureType)
 {
-	std::shared_ptr<My_Ezz::Texture2D> texure;
-	std::fstream strm;
-	strm.open(strTexturePath, std::ios::binary | std::ios::in);
-	if (!strm.is_open())
-		return nullptr;
-	uint64_t size = getStreamSize(strm);
-	char* buffer = new char[size];
-	int i = 0;
-	while (!strm.eof())
-	{
-		strm.get(buffer[i]);
-		++i;
-	}
-	buffer[--i] = '\0';
-	strm.close();
 	
-	//texure = std::make_shared<My_Ezz::Texture2D>(reinterpret_cast<unsigned int*>(buffer), 1000, 1000);
+	std::shared_ptr<My_Ezz::Texture2D> texure;
+	int channels = 0;
+	int width = 0;
+	int height = 0;
+	//stbi_set_flip_vertically_on_load(true);
+	unsigned char* pixels = stbi_load((path + "/" + strTexturePath).c_str(), &width, &height, &channels, 0);
+	if (!pixels)
+	{
+		LOG_CRITICAL("Don't load texture {0}", (path + "/" + strTexturePath).c_str());
+		return nullptr;
+	}
+	texure = std::make_shared<My_Ezz::Texture2D>(pixels, width, height, textureType);
 	m_textures.emplace(strTextureName, texure);
 
 	return texure;
@@ -480,6 +584,68 @@ std::shared_ptr<My_Ezz::Texture2D> ResourceManager::getTexture(const std::string
 	{
 		return nullptr;
 	}
+}
+
+std::shared_ptr<My_Ezz::Material> ResourceManager::loadMaterial(const std::string& strMaterialPath, std::shared_ptr<My_Ezz::MaterialLibrary> pMaterialLib)
+{
+	std::ifstream file;
+	file.open(path + "/" + strMaterialPath.c_str(), std::ios::in, std::ios::binary);
+	if (!file.is_open())
+	{
+		return nullptr;
+	}
+
+	std::string line;
+	std::shared_ptr<My_Ezz::Material> pNewMaterial;
+	std::vector<std::string> localPath = split(strMaterialPath, "/");
+	while (std::getline(file, line))
+	{
+		std::vector<std::string> list = split(line, " ");
+
+		if (list[0] == "#")
+		{
+			continue;
+		}
+		else if (list[0] == "newmtl")
+		{
+			pNewMaterial = std::make_shared<My_Ezz::Material>();
+			pNewMaterial->SetName(list[1]);
+			pMaterialLib->AddMaterial(pNewMaterial);
+
+		}
+		else if (list[0] == "Ns")
+		{
+			pNewMaterial->SetShines(std::stod(list[1]));
+		}
+		else if (list[0] == "Ka")
+		{
+			pNewMaterial->SetAmbientColor(glm::vec3(std::stod(list[1]), std::stod(list[2]), std::stod(list[3])));
+		}
+		else if (list[0] == "Kd")
+		{
+			pNewMaterial->SetDiffuseColor(glm::vec3(std::stod(list[1]), std::stod(list[2]), std::stod(list[3])));
+		}
+		else if (list[0] == "Ks")
+		{
+			pNewMaterial->SetSpecularColor(glm::vec3(std::stod(list[1]), std::stod(list[2]), std::stod(list[3])));
+		}
+		else if (list[0] == "map_Kd")
+		{
+			std::shared_ptr<My_Ezz::Texture2D> pDiffMap = loadTexture(list[1], localPath[0] + "/" + localPath[1] + "/" + list[1].c_str());
+			if (pDiffMap)
+				pNewMaterial->SetDiffuseMap(pDiffMap);
+		}
+		else if (list[0] == "map_Bump")
+		{
+			std::shared_ptr<My_Ezz::Texture2D> pNormMap = loadTexture(list[1], localPath[0] + "/" + localPath[1] + "/" + list[1].c_str(), My_Ezz::TextureType::kNormal);
+			if (pNormMap)
+				pNewMaterial->SetNormalMap(pNormMap);
+		}
+	}
+	file.close();
+	pMaterialLib->AddMaterial(pNewMaterial);
+
+	return pNewMaterial;
 }
 
 //bool ResourceManager::loadJSONResurces(const string& JSONPath)

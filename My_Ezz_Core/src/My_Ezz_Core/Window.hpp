@@ -13,7 +13,7 @@ namespace My_Ezz
 	public:
 		using EventCallbackFn = std::function<void(BaseEvent&)>;
 
-		Window(std::string title, const unsigned int& width, const unsigned int& height);
+		Window(std::string title, bool bAutoSize = true, const unsigned int& width = 0, const unsigned int& height = 0);
 		~Window();
 		Window(const Window&) = delete;
 		Window(Window&&) = delete;
@@ -49,6 +49,7 @@ namespace My_Ezz
 
 		GLFWwindow* m_window = nullptr;
 		WindowData m_data;
+		bool m_bAutoSize;
 
 	};
 }

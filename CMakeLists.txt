@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.23)
 
 set(PROJECT_NAME My_Ezz)
+project(${PROJECT_NAME})
 
 add_subdirectory(My_Ezz_Editor)
 add_subdirectory(My_Ezz_Core)

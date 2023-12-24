@@ -55,7 +55,7 @@ namespace My_Ezz
 		glm::vec3 m_right;
 		glm::vec3 m_up;
 
-		float m_FarClipPlane = 100.f;
+		float m_FarClipPlane = 1000.f;
 		float m_NearClipPlane = 0.1f;
 		float m_ViewportWidth = 800.f;
 		float m_ViewportHeight = 600.f;

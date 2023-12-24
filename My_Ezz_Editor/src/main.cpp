@@ -72,10 +72,10 @@ class My_Ezz_Editor : public My_Ezz::Application
 			rotation_delta.x -= 0.5f;
 		}
 
-		if (My_Ezz::Input::IsMouseButtonPressed(My_Ezz::MouseButton::MOUSE_BUTTON_RIGHT))
+		if (My_Ezz::Input::IsMouseButtonPressed(My_Ezz::MouseButton::MOUSE_BUTTON_LEFT))
 		{
 			glm::vec2 currentCursorPosition = GetCurrentCursorPosition();
-			if (My_Ezz::Input::IsMouseButtonPressed(My_Ezz::MouseButton::MOUSE_BUTTON_LEFT))
+			if (My_Ezz::Input::IsMouseButtonPressed(My_Ezz::MouseButton::MOUSE_BUTTON_RIGHT))
 			{
 				camera.moveRight((currentCursorPosition.x - m_dInitialMousePosX) / 100.0f);
 				camera.moveUp((m_dInitialMousePosY - currentCursorPosition.y) / 100.0f);
@@ -210,7 +210,7 @@ int main(int argc, char* argv[])
 	ResourceManager::setExecutablePath(argv[0]);
 
 	auto pMy_Ezz_Editor = std::make_unique<My_Ezz_Editor>();
-	int returnCode = pMy_Ezz_Editor->start(1024, 768, "My_Ezz Editor");
+	int returnCode = pMy_Ezz_Editor->start("My_Ezz Editor", true);
 
 	std::cin.get();
 	ResourceManager::UnloadAllResources();
