@@ -412,7 +412,7 @@ std::shared_ptr<My_Ezz::Object> ResourceManager::loadObject(const std::string& s
 
 	std::shared_ptr<My_Ezz::Object> object;
 	if (eType == EObjectType::kBase)
-		object = std::make_shared<My_Ezz::Object>();
+		object = std::make_shared<My_Ezz::Object>(strObjectName);
 	else if (eType == EObjectType::kLight)
 		object = std::make_shared<My_Ezz::LightBase>();
 
@@ -502,7 +502,7 @@ std::shared_ptr<My_Ezz::Object> ResourceManager::loadObject(const std::string& s
 			strMtlName = list[1];
 			object->AddMesh(pMesh);
 			if (eType == EObjectType::kBase)
-				pMesh = std::make_shared<My_Ezz::BaseMesh>();
+				pMesh = std::make_shared<My_Ezz::BaseMesh>(strMtlName);
 			else if (eType == EObjectType::kLight)
 				pMesh = std::make_shared<My_Ezz::LightMesh>();
 			vertBuffer.clear();

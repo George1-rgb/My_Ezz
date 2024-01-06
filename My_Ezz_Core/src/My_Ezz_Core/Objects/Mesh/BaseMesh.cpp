@@ -15,25 +15,27 @@
 
 namespace My_Ezz
 {
-	BaseMesh::BaseMesh()
+	BaseMesh::BaseMesh(const std::string& strName)
 		: m_pVAO(std::make_unique<VertexArray>()),
 		m_dScale(1.0f),
 		m_mProjectionMatrix(1.0f),
 		m_mViewMatrix(1.0f),
 		m_vPosition(1.0f),
 		m_vRotation(0.0f),
-		m_pMaterial(nullptr)
+		m_pMaterial(nullptr),
+		m_strName(strName)
 	{
 
 	}
 
-	BaseMesh::BaseMesh(std::shared_ptr<VertexBuffer> m_pPositions, std::shared_ptr<IndexBuffer> m_pIndexes)
+	BaseMesh::BaseMesh(std::shared_ptr<VertexBuffer> m_pPositions, std::shared_ptr<IndexBuffer> m_pIndexes, const std::string& strName)
 		: m_pVAO(std::make_unique<VertexArray>()),
 		m_dScale(1.0f),
 		m_mProjectionMatrix(1.0f),
 		m_mViewMatrix(1.0f),
 		m_vPosition(1.0f),
-		m_vRotation(0.0f)
+		m_vRotation(0.0f),
+		m_strName(strName)
 	{
 		m_pVAO->addVertexBuffer(*m_pPositions.get());
 		m_pVAO->setIndexBuffer(*m_pIndexes.get());
@@ -122,6 +124,11 @@ namespace My_Ezz
 	void BaseMesh::SetMaterial(std::shared_ptr<Material> pMaterial)
 	{
 		m_pMaterial = pMaterial;
+	}
+
+	const std::string& BaseMesh::GetName() const
+	{
+		return m_strName;
 	}
 
 }

@@ -8,7 +8,8 @@
 namespace My_Ezz
 {
 
-	Object::Object()
+	Object::Object(const std::string& strName) 
+		: m_strName(strName)
 	{
 		m_pMtlLib = std::make_shared<MaterialLibrary>();
 	}
@@ -49,11 +50,6 @@ namespace My_Ezz
 			pMesh->SetScale(dScale);
 	}
 
-	void Object::SetTexture(std::shared_ptr<Texture2D> pTexture)
-	{
-		m_pTexture = pTexture;
-	}
-
 	void Object::AddMesh(std::shared_ptr<BaseMesh> pMesh)
 	{
 		if (!pMesh)
@@ -71,8 +67,6 @@ namespace My_Ezz
 
 	void Object::Draw(std::shared_ptr<ShaderProgram> pShaderProgram)
 	{
-		if (m_pTexture)
-			m_pTexture->bind(0);
 		for (auto pMesh : m_vMeshes)
 			pMesh->Draw(pShaderProgram);
 	}
@@ -86,6 +80,33 @@ namespace My_Ezz
 	std::shared_ptr<My_Ezz::MaterialLibrary> Object::GetMtlLib() const
 	{
 		return m_pMtlLib;
+	}
+
+	bool Object::Load(const rapidjson::Value& obj)
+	{
+		return true;
+	}
+
+	bool Object::Save(rapidjson::Writer<rapidjson::StringBuffer>* writer) const
+	{
+		writer->StartObject();
+
+		writer->String("object_name"); // create Id property
+		writer->String(m_strName.c_str());     // write the Id value from the object instance
+
+		writer->String("meshes");
+		writer->StartArray();
+		{
+			for (auto& pMesh : m_vMeshes)
+			{
+				writer->String(pMesh->GetName().c_str());
+			}
+		}
+		writer->EndArray();
+
+		writer->EndObject();
+
+		return true;
 	}
 
 }

@@ -87,6 +87,7 @@ int Application::start(const char* title, bool bAutoSize, unsigned int widnow_wi
     Multimedia::InitSoundContext();
 	
 	std::shared_ptr<Object> pTempObj = ResourceManager::loadObject("test", "res/objects/plane.obj");
+	std::string strTest = pTempObj->Serialize();
 	if (pTempObj)
 		pTempObj->SetPosition(glm::vec3(5.f, 0.f, 0.f));
 		m_vDrawingObjects.push_back(pTempObj);

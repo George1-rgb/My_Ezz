@@ -8,8 +8,8 @@ namespace My_Ezz
 	class BaseMesh: public IDrawing, public ITransforming
 	{
 	public:
-		BaseMesh();
-		BaseMesh(std::shared_ptr<VertexBuffer> m_pPositions, std::shared_ptr<IndexBuffer> m_pIndexes);
+		BaseMesh(const std::string& strName = "");
+		BaseMesh(std::shared_ptr<VertexBuffer> m_pPositions, std::shared_ptr<IndexBuffer> m_pIndexes, const std::string& strName = "");
 		virtual  ~BaseMesh() {}
 
 
@@ -28,6 +28,8 @@ namespace My_Ezz
 
 
 		void SetMaterial(std::shared_ptr<Material> pMaterial);
+
+		const std::string& GetName() const;
 	protected:
 		std::shared_ptr<VertexArray> m_pVAO;
 		glm::mat4 m_mProjectionMatrix;
@@ -38,5 +40,6 @@ namespace My_Ezz
 		glm::vec3 m_vRotation;
 
 		std::shared_ptr<Material> m_pMaterial;
+		std::string m_strName;
 	};
 }

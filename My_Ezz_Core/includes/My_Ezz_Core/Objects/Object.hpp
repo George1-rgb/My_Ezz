@@ -7,10 +7,10 @@ namespace My_Ezz
 {
 	class BaseMesh;
 	class MaterialLibrary;
-	class Object
+	class Object : public ISerializable
 	{
 	public:
-		Object();
+		Object(const std::string& strName = "none");
 
 		virtual ~Object() {}
 
@@ -21,17 +21,18 @@ namespace My_Ezz
 		virtual void SetRotation(const glm::vec3& vRotation);
 		virtual void SetScale(const double& dScale);
 
-		void SetTexture(std::shared_ptr<Texture2D> pTexture);
-
 		void AddMesh(std::shared_ptr<BaseMesh> pMesh);
 		void Draw(std::shared_ptr<ShaderProgram> pShaderProgram);
 		void SetShaderMatrix(const glm::mat4& mProjectionMatrix, const glm::mat4& mViewMatrix);
 		std::shared_ptr<MaterialLibrary> GetMtlLib() const;
+
+		//ISerializable
+		virtual bool Load(const rapidjson::Value& obj) override;
+		virtual bool Save(rapidjson::Writer<rapidjson::StringBuffer>* writer) const override;
 	protected:
-		std::shared_ptr<Texture2D> m_pTexture;
 		std::shared_ptr<MaterialLibrary> m_pMtlLib;
 		std::vector<std::shared_ptr<BaseMesh>> m_vMeshes;
-
+		std::string m_strName;
 
 	};
 }
