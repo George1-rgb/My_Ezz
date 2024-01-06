@@ -7,8 +7,6 @@ namespace My_Ezz
 		kDiffuse,
 		kNormal
 	};
-
-
 	class Texture2D
 	{
 	public:

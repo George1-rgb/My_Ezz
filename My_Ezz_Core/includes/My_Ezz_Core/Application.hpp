@@ -9,6 +9,7 @@
 #include "My_Ezz_Core/Interfaces.hpp"
 namespace My_Ezz
 {
+	class SkyBox;
 	class Application
 	{
 	public:
@@ -30,23 +31,21 @@ namespace My_Ezz
 		glm::vec2 GetCurrentCursorPosition() const;
 
 		Camera camera{glm::vec3(-5.0f, 0.0f, 0.0f)};
-		float fLightSourcePosition[3] = { 0.0f, 0.0f, 0.0f };
-		float fLightSourceColor[3] = { 1.0f, 1.0f, 1.0f };
 		float fAngles[3] = { 0.0f, 0.0f, 0.0f };
-		float fAmbientFactor = 0.1f;
-		float fDiffuseFactor = 1.f;
-		float fSpecularFactor = 0.5f;
-		float fShininess = 32.f;
 	private:
-		void draw();
 		void InitCallbacks();
 		bool InitShaders();
+		void Update();
+		void UpdateScene();
+		void UpdateMainShadersParams();
+		void UpdateSkyBoxShadersParams();
 		std::unique_ptr<class Window> m_window;
 		EventDispatcher m_eventDispatcher;
 		bool m_bCloseWindow = false;
 		std::vector<std::shared_ptr<Object>> m_vDrawingObjects;
+		std::shared_ptr<SkyBox> m_pSkyBox;
 		std::shared_ptr<LightBase> m_pLightObj;
-
-		void timer();
+		std::shared_ptr<ShaderProgram> m_pMainShaderProgram;
+		std::shared_ptr<ShaderProgram> m_pSkyBoxShaderProgram;
 	};
 }

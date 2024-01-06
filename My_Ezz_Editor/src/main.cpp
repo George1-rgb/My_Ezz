@@ -167,12 +167,6 @@ class My_Ezz_Editor : public My_Ezz::Application
 
 		ImGui::Begin("Editor");
 
-		ImGui::SliderFloat3("Light source position", fLightSourcePosition, -10.0f, 10.0f);
-		ImGui::ColorEdit3("Light source color", fLightSourceColor);
-		ImGui::SliderFloat("Ambient factor", &fAmbientFactor, 0.0f, 1.0f);
-		ImGui::SliderFloat("Diffuse factor", &fDiffuseFactor, 0.0f, 1.0f);
-		ImGui::SliderFloat("Specular factor", &fSpecularFactor, 0.0f, 1.0f);
-		ImGui::SliderFloat("Shininess", &fShininess, 1.0f, 128.0f);
 		ImGui::SliderFloat3("TEST(Box rotation)", fAngles, -180.0f, 180.0f);
 
 		if (ImGui::SliderFloat3("Camera position", cameraPosition, -10.0f, 10.0f))

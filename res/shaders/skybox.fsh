@@ -1,9 +1,11 @@
-uniform sampler2D u_texture;
-varying highp vec2 v_texcoord;
+#version 460
+uniform sampler2D u_diffuseMap;
+in vec2 v_Texcoord;
 
-void main(void)
+out vec4 frag_color;
+void main()
 {
 
-    gl_FragColor = texture2D(u_texture, v_texcoord);
+    frag_color = texture2D(u_diffuseMap, v_Texcoord);
 
 }

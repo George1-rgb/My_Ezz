@@ -47,14 +47,13 @@ namespace My_Ezz
 
 	void BaseMesh::Draw(std::shared_ptr<ShaderProgram> pShaderProgram)
 	{
-	
-		if (m_pMaterial->IsUsingDiffuseMap())
+		if (m_pMaterial && m_pMaterial->IsUsingDiffuseMap())
 		{
 			m_pMaterial->GetDiffuseMap()->bind(0);
 			pShaderProgram->setUniformValue("u_diffuseMap", 0);
 		}
 
-		if (m_pMaterial->IsUsingNormalMap())
+		if (m_pMaterial && m_pMaterial->IsUsingNormalMap())
 		{
 			m_pMaterial->GetNormalMap()->bind(1);
 			pShaderProgram->setUniformValue("u_normalMap", 1);
@@ -62,16 +61,23 @@ namespace My_Ezz
 
 		glm::mat4 modelMatrix = glm::mat4(1.0f);
 		modelMatrix = glm::translate(modelMatrix, m_vPosition);
-		modelMatrix = glm::mat4_cast(glm::qua(glm::radians(m_vRotation)))*modelMatrix;
+		modelMatrix = glm::rotate(modelMatrix, glm::radians(m_vRotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
+		modelMatrix = glm::rotate(modelMatrix, glm::radians(m_vRotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
+		modelMatrix = glm::rotate(modelMatrix, glm::radians(m_vRotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
+		//modelMatrix = glm::mat4_cast(glm::qua(glm::radians(m_vRotation)))*modelMatrix;
 		modelMatrix = glm::scale(modelMatrix, glm::vec3(m_dScale));
+		modelMatrix = glm::mat4(1.0f) * modelMatrix;
 		pShaderProgram->setUniformValue("u_modelMatrix", modelMatrix);
 
-		pShaderProgram->setUniformValue("u_materialProperty.ambientColor", m_pMaterial->GetAmbientColor());
-		pShaderProgram->setUniformValue("u_materialProperty.diffuseColor", m_pMaterial->GetDiffuseColor());
-		pShaderProgram->setUniformValue("u_materialProperty.specularColor", m_pMaterial->GetSpeculatColor());
-		pShaderProgram->setUniformValue("u_materialProperty.shines", m_pMaterial->GetShines());
-		pShaderProgram->setUniformValue("u_isUsingDiffuseMap", m_pMaterial->IsUsingDiffuseMap());
-		pShaderProgram->setUniformValue("u_isUsingNormalMap", m_pMaterial->IsUsingNormalMap());
+		if (m_pMaterial)
+		{
+			pShaderProgram->setUniformValue("u_materialProperty.ambientColor", m_pMaterial->GetAmbientColor());
+			pShaderProgram->setUniformValue("u_materialProperty.diffuseColor", m_pMaterial->GetDiffuseColor());
+			pShaderProgram->setUniformValue("u_materialProperty.specularColor", m_pMaterial->GetSpeculatColor());
+			pShaderProgram->setUniformValue("u_materialProperty.shines", m_pMaterial->GetShines());
+			pShaderProgram->setUniformValue("u_isUsingDiffuseMap", m_pMaterial->IsUsingDiffuseMap());
+			pShaderProgram->setUniformValue("u_isUsingNormalMap", m_pMaterial->IsUsingNormalMap());
+		}
 
 		Renderer_OpenGL::draw(*m_pVAO);
 	}

@@ -7,7 +7,6 @@
 #include "My_Ezz_Core/Objects/Mesh/BaseMesh.hpp"
 #include "My_Ezz_Core/Objects/Mesh/LightMesh.hpp"
 
-
 #include "My_Ezz_Core/Rendering/OpenGL/VertexBuffer.hpp"
 #include "My_Ezz_Core/Rendering/OpenGL/VertexArray.hpp"
 #include "My_Ezz_Core/Rendering/OpenGL/IndexBuffer.hpp"

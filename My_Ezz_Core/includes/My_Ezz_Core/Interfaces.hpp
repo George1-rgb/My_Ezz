@@ -11,6 +11,7 @@ namespace My_Ezz
 	class IndexBuffer;
 	class Texture2D;
 
+
 	class IDrawing
 	{
 	public:
@@ -32,5 +33,12 @@ namespace My_Ezz
 		virtual void SetPosition(const glm::vec3& vPosition) = 0;
 		virtual void SetRotation(const glm::vec3& vRotation) = 0;
 		virtual void SetScale(const double& dScale) = 0;
+	};
+
+	class ISerializable
+	{
+	public:
+		ISerializable() {}
+		virtual ~ISerializable() {}
 	};
 }

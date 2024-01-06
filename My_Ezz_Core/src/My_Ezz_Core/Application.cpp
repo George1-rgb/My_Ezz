@@ -28,33 +28,13 @@
 #include "My_Ezz_Multimedia/AudioBase.hpp"
 #include "My_Ezz_Multimedia/Multimedia.hpp"
 #include "My_Ezz_Core/Objects/Mesh/BaseMesh.hpp"
-
+#include "My_Ezz_Core/Objects/SkyBox.hpp"
 #include <chrono>
 #include <thread>
 
 using namespace My_Ezz;
 
-std::shared_ptr<ShaderProgram> pShaderProgram;
-std::shared_ptr<ShaderProgram> pLightSourceShaderProgram;
-std::shared_ptr<VertexBuffer> pCubePositionsVBO;
-std::shared_ptr<IndexBuffer> pCubeIndexBuffer;
-//std::shared_ptr<Texture2D> pTexture_Smile;
-//std::shared_ptr<Texture2D> pTexture_Quads;
-std::shared_ptr<VertexArray> pVAO_1;
-std::shared_ptr<Object> objPlane;
-std::shared_ptr<Object> objSphere;
-std::shared_ptr<Object> objCube;
-std::shared_ptr<Object> objTest;
-
 float m_backgroundColor[4] = { 0.5f, 0.5f, 0.5f, 0.0f };
-
-std::array<glm::vec3, 4> positionsCubes =
-{
-    glm::vec3(0.f, -3.f, -3.f),
-    glm::vec3(0.f, -3.f, 3.f),
-    glm::vec3(0.f, 3.f, -3.f),
-    glm::vec3(0.f, 3.f, 3.f)
-};
 
 Application::Application()
 {
@@ -66,71 +46,13 @@ Application::~Application()
     LOG_INFO("Closing Application");
 }
 
-
-void Application::timer() {
-
-	// Infinite while loop.
-    std::chrono::milliseconds timespan(20); // or whatever
-	while (true) {
-        fAngles[0] += 1.0f;
-        fAngles[1] += 1.0f;
-        fAngles[2] += 1.0f;
-
-        if (fAngles[0] >= 360.0f)
-            fAngles[0] = 0;
-		if (fAngles[1] >= 360.0f)
-			fAngles[1] = 0;
-		if (fAngles[2] >= 360.0f)
-			fAngles[2] = 0;
-		std::this_thread::sleep_for(timespan);
-	}
-}
-
-void Application::draw()
+void Application::Update()
 {
 	//----------------------------------------//
 	Renderer_OpenGL::setClearColor(m_backgroundColor[0], m_backgroundColor[1], m_backgroundColor[2], m_backgroundColor[3]);
 	Renderer_OpenGL::clear();
-
-	//////light source
-	//{
-	//	pLightSourceShaderProgram->bind();
-	//	m_pLightObj->SetPosition(glm::vec3(fLightSourcePosition[0], fLightSourcePosition[1], fLightSourcePosition[2]));
-	//	m_pLightObj->SetShaderMatrix(camera.getProjectionMatrix(), camera.getViewMatrix());
-	//	m_pLightObj->SetColor(glm::vec3(fLightSourceColor[0], fLightSourceColor[1], fLightSourceColor[2]));
-	//	m_pLightObj->SetScale(0.5);
-	//	m_pLightObj->Draw(pLightSourceShaderProgram);
-	//}
-	{
-		pShaderProgram->bind();
-		/*pShaderProgram->setUniformValue("light_position_eye", glm::vec3(camera.getViewMatrix() * glm::vec4(fLightSourcePosition[0], fLightSourcePosition[1], fLightSourcePosition[2], 1.f)));
-		pShaderProgram->setUniformValue("light_color", glm::vec3(fLightSourceColor[0], fLightSourceColor[1], fLightSourceColor[2]));*/
-		pShaderProgram->setUniformValue("u_projectionMatrix", camera.getProjectionMatrix());
-		pShaderProgram->setUniformValue("u_viewMatrix", camera.getViewMatrix());
-		pShaderProgram->setUniformValue("u_shadowMap", GL_TEXTURE4 - GL_TEXTURE0);
-		pShaderProgram->setUniformValue("u_lightDirection", glm::vec4(0.0f, 0.0f, -1.0f, 0.0f));
-
-		glm::mat4 projectionLightMatrix = glm::mat4(1.0f);
-		projectionLightMatrix = glm::ortho(-40.0f, 40.0f, -40.0f, 40.0f, -40.0f, 40.0f);
-		pShaderProgram->setUniformValue("u_projectionLightMatrix", projectionLightMatrix);
-
-
-		glm::mat4 shadowLightMatrix = glm::mat4(1.0f);
-		shadowLightMatrix = glm::rotate(shadowLightMatrix, 30.0f, glm::vec3(1.0f, 0.0f, 0.0f));
-		shadowLightMatrix = glm::rotate(shadowLightMatrix, 40.0f, glm::vec3(0.0f, 1.0f, 0.0f));
-		pShaderProgram->setUniformValue("u_shadowLightMatrix", shadowLightMatrix);
-		
-
-		glm::mat4 lightMatrix = glm::mat4(1.0f);
-		lightMatrix = glm::rotate(lightMatrix, -40.0f, glm::vec3(0.0f, 1.0f, 0.0f));
-		lightMatrix = glm::rotate(lightMatrix, -30.0f, glm::vec3(1.0f, 0.0f, 0.0f));
-		pShaderProgram->setUniformValue("u_lightMatrix", lightMatrix);
-		pShaderProgram->setUniformValue("u_lightPower", 10.0f);
-
-		objTest->SetPosition(glm::vec3(5.f, 0.f, 0.f));
-		objTest->SetRotation(glm::vec3(fAngles[0], fAngles[1], fAngles[2]));
-		objTest->Draw(pShaderProgram);
-	}
+	
+	UpdateScene();
 
 	UIModule::onWindowUpdateBegin();
 	on_UIDraw();
@@ -141,24 +63,42 @@ void Application::draw()
 	on_update();
 }
 
+
+void Application::UpdateScene()
+{
+	UpdateSkyBoxShadersParams();
+	m_pSkyBox->Draw(m_pSkyBoxShaderProgram);
+
+	UpdateMainShadersParams();
+	for (auto& pDrawObj : m_vDrawingObjects)
+		pDrawObj->Draw(m_pMainShaderProgram);
+}
+
+
 int Application::start(const char* title, bool bAutoSize, unsigned int widnow_width, unsigned int widnow_height)
 {
 
-    m_window = std::make_unique<Window>(title, bAutoSize);
-    camera.SetViewportSize(static_cast<float>(widnow_width), static_cast<float>(widnow_height));
-
+    m_window = std::make_unique<Window>(title, bAutoSize, widnow_width, widnow_height);
+    camera.SetViewportSize(static_cast<float>(m_window->get_width()), static_cast<float>(m_window->get_height()));
+	camera.setPosition(glm::vec3(-5.0f, 0.f, 0.f));
 	if (!InitShaders())
 		return -1;
 	InitCallbacks();
     Multimedia::InitSoundContext();
+	
+	std::shared_ptr<Object> pTempObj = ResourceManager::loadObject("test", "res/objects/plane.obj");
+	if (pTempObj)
+		pTempObj->SetPosition(glm::vec3(5.f, 0.f, 0.f));
+		m_vDrawingObjects.push_back(pTempObj);
 
-    objTest = ResourceManager::loadObject("test", "res/objects/plane.obj");	
-	//m_pLightObj = std::dynamic_pointer_cast<LightBase>(ResourceManager::loadObject("light", "res/objects/cube.obj", ResourceManager::EObjectType::kLight));
+
+	std::shared_ptr<Texture2D> pSkyTexture = ResourceManager::loadTexture("skyBox", "res/textures/pngegg.png");
+	m_pSkyBox = std::make_shared<SkyBox>(100, pSkyTexture);
     Renderer_OpenGL::EnableDepthTesting();
 
     while (!m_bCloseWindow)
     {
-        draw();
+		Update();
     }
     m_window = nullptr;
 
@@ -183,7 +123,7 @@ void Application::InitCallbacks()
 		{
 			//LOG_INFO("[Resized] Changed size to {0}x{1}", event.width, event.height);
 			camera.SetViewportSize(event.width, event.height);
-			draw();
+			Update();
 		});
 
 	m_eventDispatcher.addEventListener<EventWindowClose>(
@@ -230,9 +170,8 @@ void Application::InitCallbacks()
 bool Application::InitShaders()
 {
 	ResourceManager::loadShaders("main_shader", "res/shaders/vshader.vert", "res/shaders/fshader.frag");
-
-	pShaderProgram = ResourceManager::getShaderProgram("main_shader");
-	if (!pShaderProgram->isCompiled())
+	m_pMainShaderProgram = ResourceManager::getShaderProgram("main_shader");
+	if (!m_pMainShaderProgram->isCompiled())
 	{
 		LOG_INFO("The shader main_shader is not compiled");
 		return false;
@@ -240,15 +179,49 @@ bool Application::InitShaders()
 	else
 		LOG_INFO("The shader main_shader is compiled");
 
-	/*pLightSourceShaderProgram = ResourceManager::getShaderProgram("light_shader");
-	if (!pLightSourceShaderProgram->isCompiled())
+	ResourceManager::loadShaders("sky_box", "res/shaders/skybox.vsh", "res/shaders/skybox.fsh");
+	m_pSkyBoxShaderProgram = ResourceManager::getShaderProgram("sky_box");
+	if (!m_pSkyBoxShaderProgram->isCompiled())
 	{
-		LOG_INFO("The shader light_shader is not compiled");
+		LOG_INFO("The shader skybox is not compiled");
 		return false;
 	}
 	else
-		LOG_INFO("The shader light_shader is compiled");*/
+		LOG_INFO("The shader skybox is compiled");
 
 	return true;
 }
 
+void Application::UpdateMainShadersParams()
+{
+	m_pMainShaderProgram->bind();
+	m_pMainShaderProgram->setUniformValue("u_projectionMatrix", camera.getProjectionMatrix());
+	m_pMainShaderProgram->setUniformValue("u_viewMatrix", camera.getViewMatrix());
+	m_pMainShaderProgram->setUniformValue("u_shadowMap", GL_TEXTURE4 - GL_TEXTURE0);
+	m_pMainShaderProgram->setUniformValue("u_lightDirection", glm::vec4(0.0f, 0.0f, -1.0f, 0.0f));
+
+	//TODO:מבתוהוםטעü ס depth רויהונמל
+	glm::mat4 projectionLightMatrix = glm::mat4(1.0f);
+	projectionLightMatrix = glm::ortho(-40.0f, 40.0f, -40.0f, 40.0f, -40.0f, 40.0f);
+	m_pMainShaderProgram->setUniformValue("u_projectionLightMatrix", projectionLightMatrix);
+
+
+	glm::mat4 shadowLightMatrix = glm::mat4(1.0f);
+	shadowLightMatrix = glm::rotate(shadowLightMatrix, 30.0f, glm::vec3(1.0f, 0.0f, 0.0f));
+	shadowLightMatrix = glm::rotate(shadowLightMatrix, 40.0f, glm::vec3(0.0f, 1.0f, 0.0f));
+	m_pMainShaderProgram->setUniformValue("u_shadowLightMatrix", shadowLightMatrix);
+
+
+	glm::mat4 lightMatrix = glm::mat4(1.0f);
+	lightMatrix = glm::rotate(lightMatrix, -40.0f, glm::vec3(0.0f, 1.0f, 0.0f));
+	lightMatrix = glm::rotate(lightMatrix, -30.0f, glm::vec3(1.0f, 0.0f, 0.0f));
+	m_pMainShaderProgram->setUniformValue("u_lightMatrix", lightMatrix);
+	m_pMainShaderProgram->setUniformValue("u_lightPower", 10.0f);
+}
+
+void Application::UpdateSkyBoxShadersParams()
+{
+	m_pSkyBoxShaderProgram->bind();
+	m_pSkyBoxShaderProgram->setUniformValue("u_projectionMatrix", camera.getProjectionMatrix());
+	m_pSkyBoxShaderProgram->setUniformValue("u_viewMatrix", camera.getViewMatrix());
+}

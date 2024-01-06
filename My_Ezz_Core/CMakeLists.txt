@@ -11,6 +11,7 @@ includes/My_Ezz_Core/Input.hpp
 includes/My_Ezz_Core/ResourceManager.hpp
 includes/My_Ezz_Core/Interfaces.hpp
 includes/My_Ezz_Core/Objects/Object.hpp
+includes/My_Ezz_Core/Objects/SkyBox.hpp
 includes/My_Ezz_Core/Objects/Material.hpp
 includes/My_Ezz_Core/Objects/MaterialLib.hpp
 includes/My_Ezz_Core/Objects/LightBase.hpp
@@ -43,6 +44,7 @@ src/My_Ezz_Core/Rendering/OpenGL/Renderer_OpenGL.cpp
 src/My_Ezz_Core/Modules/UIModule.cpp
 src/My_Ezz_Core/ResourceManager.cpp
 src/My_Ezz_Core/Objects/Object.cpp
+src/My_Ezz_Core/Objects/SkyBox.cpp
 src/My_Ezz_Core/Objects/Material.cpp
 src/My_Ezz_Core/Objects/MaterialLib.cpp
 src/My_Ezz_Core/Objects/LightBase.cpp
