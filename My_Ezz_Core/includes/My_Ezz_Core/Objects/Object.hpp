@@ -29,10 +29,15 @@ namespace My_Ezz
 		//ISerializable
 		virtual bool Load(const rapidjson::Value& obj) override;
 		virtual bool Save(rapidjson::Writer<rapidjson::StringBuffer>* writer) const override;
+		virtual bool SaveRefs(rapidjson::Writer<rapidjson::StringBuffer>* writer) const override;
+
+		int GetID() { return m_nID; }
+		std::string GetName() { return m_strName; }
 	protected:
 		std::shared_ptr<MaterialLibrary> m_pMtlLib;
 		std::vector<std::shared_ptr<BaseMesh>> m_vMeshes;
 		std::string m_strName;
-
+		static int m_nIDGen;
+		int m_nID;
 	};
 }

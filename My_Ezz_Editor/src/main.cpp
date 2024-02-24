@@ -145,6 +145,7 @@ class My_Ezz_Editor : public My_Ezz::Application
 
 	virtual void OnMouseButtonEvent(const My_Ezz::MouseButton mouseButton, const double x_pos, const double y_pos, const bool bPressed) override
 	{
+		__super::OnMouseButtonEvent(mouseButton, x_pos, y_pos, bPressed);
 		m_dInitialMousePosX = x_pos;
 		m_dInitialMousePosY = y_pos;
 	}

@@ -37,6 +37,7 @@ using namespace My_Ezz;
 float m_backgroundColor[4] = { 0.5f, 0.5f, 0.5f, 0.0f };
 
 Application::Application()
+	:m_bSelected(false)
 {
     LOG_INFO("Starting Application");
 }
@@ -66,14 +67,16 @@ void Application::Update()
 
 void Application::UpdateScene()
 {
+	Renderer_OpenGL::EnableDepthTesting();
+
 	UpdateSkyBoxShadersParams();
 	m_pSkyBox->Draw(m_pSkyBoxShaderProgram);
 
-	UpdateMainShadersParams();
-	for (auto& pDrawObj : m_vDrawingObjects)
-		pDrawObj->Draw(m_pMainShaderProgram);
-}
+		UpdateMainShadersParams();
+		for (auto& pDrawObj : m_vDrawingObjects)
+			pDrawObj->Draw(m_pMainShaderProgram);
 
+}
 
 int Application::start(const char* title, bool bAutoSize, unsigned int widnow_width, unsigned int widnow_height)
 {
@@ -152,6 +155,7 @@ void Application::InitCallbacks()
 		{
 			Input::PressMouseButton(event.key_Code);
 			OnMouseButtonEvent(event.key_Code, event.x_pos, event.y_pos, true);
+			LOG_INFO("Mouse position {0}, {1}", event.x_pos, event.y_pos);
 		});
 
 	m_eventDispatcher.addEventListener<EventMouseButtonReleased>(
@@ -190,6 +194,27 @@ bool Application::InitShaders()
 	else
 		LOG_INFO("The shader skybox is compiled");
 
+	ResourceManager::loadShaders("select", "res/shaders/select.vert", "res/shaders/select.frag");
+	m_pSelectShaderProgram = ResourceManager::getShaderProgram("select");
+	if (!m_pSelectShaderProgram->isCompiled())
+	{
+		LOG_INFO("The shader select is not compiled");
+		return false;
+	}
+	else
+		LOG_INFO("The shader select is compiled");
+
+	//ResourceManager::loadShaders("selectedFrame", "res/shaders/selected_farme.vert", "res/shaders/selected_farme.frag");
+	//m_pSelectedFrameShaderProgram = ResourceManager::getShaderProgram("selectedFrame");
+	//if (!m_pSelectedFrameShaderProgram->isCompiled())
+	//{
+	//	LOG_INFO("The shader selectedFrame is not compiled");
+	//	return false;
+	//}
+	//else
+	//	LOG_INFO("The shader selectedFrame is compiled");
+
+
 	return true;
 }
 
@@ -200,18 +225,18 @@ void Application::UpdateMainShadersParams()
 	m_pMainShaderProgram->setUniformValue("u_viewMatrix", camera.getViewMatrix());
 	m_pMainShaderProgram->setUniformValue("u_shadowMap", GL_TEXTURE4 - GL_TEXTURE0);
 	m_pMainShaderProgram->setUniformValue("u_lightDirection", glm::vec4(0.0f, 0.0f, -1.0f, 0.0f));
-
+	m_pMainShaderProgram->setUniformValue("u_borderWidth", 0.002);
+	m_pMainShaderProgram->setUniformValue("u_aspectRatio", camera.GetAspectRatio());
+	m_pMainShaderProgram->setUniformValue("u_bSelected", m_bSelected);
 	//TODO:מבתוהוםטעü ס depth רויהונמל
 	glm::mat4 projectionLightMatrix = glm::mat4(1.0f);
 	projectionLightMatrix = glm::ortho(-40.0f, 40.0f, -40.0f, 40.0f, -40.0f, 40.0f);
 	m_pMainShaderProgram->setUniformValue("u_projectionLightMatrix", projectionLightMatrix);
 
-
 	glm::mat4 shadowLightMatrix = glm::mat4(1.0f);
 	shadowLightMatrix = glm::rotate(shadowLightMatrix, 30.0f, glm::vec3(1.0f, 0.0f, 0.0f));
 	shadowLightMatrix = glm::rotate(shadowLightMatrix, 40.0f, glm::vec3(0.0f, 1.0f, 0.0f));
 	m_pMainShaderProgram->setUniformValue("u_shadowLightMatrix", shadowLightMatrix);
-
 
 	glm::mat4 lightMatrix = glm::mat4(1.0f);
 	lightMatrix = glm::rotate(lightMatrix, -40.0f, glm::vec3(0.0f, 1.0f, 0.0f));
@@ -225,4 +250,35 @@ void Application::UpdateSkyBoxShadersParams()
 	m_pSkyBoxShaderProgram->bind();
 	m_pSkyBoxShaderProgram->setUniformValue("u_projectionMatrix", camera.getProjectionMatrix());
 	m_pSkyBoxShaderProgram->setUniformValue("u_viewMatrix", camera.getViewMatrix());
+}
+
+void Application::OnMouseButtonEvent(const MouseButton mouseButton, const double x_pos, const double y_pos, const bool bPressed)
+{
+	if (!bPressed)
+		return;
+	Renderer_OpenGL::DisableDepthTesting();
+	m_pSelectShaderProgram->bind();
+	m_pSelectShaderProgram->setUniformValue("u_projectionMatrix", camera.getProjectionMatrix());
+	m_pSelectShaderProgram->setUniformValue("u_viewMatrix", camera.getViewMatrix());
+	for (auto pObject : m_vDrawingObjects)
+	{
+		int id = pObject->GetID();
+		m_pSelectShaderProgram->setUniformValue("u_code", static_cast<double>(id) / 255.0);
+		pObject->Draw(m_pSelectShaderProgram);
+	}
+	
+	unsigned char data[4];
+	glReadPixels(x_pos, camera.GetVPHeight() - y_pos, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, data);
+	int nData = 0;
+
+	nData += data[0];
+
+	for (auto pObject : m_vDrawingObjects)
+	{
+		int id = pObject->GetID();
+		if (id == nData)
+			m_bSelected = true;
+		else
+			m_bSelected = false;
+	}
 }

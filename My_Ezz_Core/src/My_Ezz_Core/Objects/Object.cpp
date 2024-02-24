@@ -8,10 +8,12 @@
 namespace My_Ezz
 {
 
+	int Object::m_nIDGen = 0;
 	Object::Object(const std::string& strName) 
 		: m_strName(strName)
 	{
 		m_pMtlLib = std::make_shared<MaterialLibrary>();
+		m_nID = ++m_nIDGen;
 	}
 
 	void Object::Rotate(const glm::vec3& vRotation)
@@ -106,6 +108,11 @@ namespace My_Ezz
 
 		writer->EndObject();
 
+		return true;
+	}
+
+	bool Object::SaveRefs(rapidjson::Writer<rapidjson::StringBuffer>* writer) const
+	{
 		return true;
 	}
 

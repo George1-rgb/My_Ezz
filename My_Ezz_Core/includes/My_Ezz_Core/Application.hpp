@@ -26,7 +26,7 @@ namespace My_Ezz
 
 		virtual void on_UIDraw() {}
 
-		virtual void OnMouseButtonEvent(const MouseButton mouseButton, const double x_pos, const double y_pos, const bool bPressed) {}
+		virtual void OnMouseButtonEvent(const MouseButton mouseButton, const double x_pos, const double y_pos, const bool bPressed);
 
 		glm::vec2 GetCurrentCursorPosition() const;
 
@@ -47,5 +47,9 @@ namespace My_Ezz
 		std::shared_ptr<LightBase> m_pLightObj;
 		std::shared_ptr<ShaderProgram> m_pMainShaderProgram;
 		std::shared_ptr<ShaderProgram> m_pSkyBoxShaderProgram;
+		std::shared_ptr<ShaderProgram> m_pSelectShaderProgram;
+		std::shared_ptr<ShaderProgram> m_pSelectedFrameShaderProgram;
+
+		bool m_bSelected;
 	};
 }

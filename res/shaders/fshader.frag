@@ -26,6 +26,10 @@ uniform float u_lightPower;
 uniform bool u_isUsingDiffuseMap;
 uniform bool u_isUsingNormalMap;
 
+uniform float u_borderWidth;
+uniform float u_aspectRatio;
+uniform bool u_bSelected;
+
 out vec4 frag_color;
 
 float SampleShadowMap(sampler2D map, vec2 coords, float compare)
@@ -109,5 +113,28 @@ void main()
     shadowCoef += 0.15;
     if(shadowCoef > 1.0) shadowCoef = 1.0;
 
-    frag_color = resultColor * shadowCoef;
+    float maxX = 1.0 - u_borderWidth;
+    float minX = u_borderWidth;
+    float maxY = 1.0 - u_borderWidth;
+    float minY = u_borderWidth;
+
+    if (u_bSelected == false)
+    {
+        frag_color = resultColor * shadowCoef;
+    }
+    else
+    {
+
+        if (v_texcoord.x < maxX && v_texcoord.x > minX &&
+            v_texcoord.y < maxY && v_texcoord.y > minY) 
+        {
+                
+            frag_color = resultColor * shadowCoef;
+        }
+        else
+        {
+            frag_color = vec4(0.5, 0.5, 0.5, 1.0f);
+        }
+    }
+    
 }

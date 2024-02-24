@@ -31,7 +31,9 @@ namespace My_Ezz
 		const float GetFarClipPlane() const { return m_FarClipPlane; }
 		const float GetNearClipPlane() const { return m_NearClipPlane; }
 		const float GetFieldOfView() const { return m_FieldOfView; }
-
+		const double GetAspectRatio() const { return m_ViewportWidth / m_ViewportHeight; }
+		const double GetVPHeight() const { return m_ViewportHeight; }
+		const double GetVPWidth() const { return m_ViewportWidth; }
 		void moveForward(const float fDelta);
 		void moveRight(const float fDelta);
 		void moveUp(const float fDelta);

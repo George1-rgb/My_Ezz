@@ -70,7 +70,7 @@ namespace My_Ezz
 		{
 			rapidjson::StringBuffer ss;
 			rapidjson::Writer<rapidjson::StringBuffer> writer(ss);		// Can also use Writer for condensed formatting
-			if (Save(&writer))
+			if (Save(&writer) && SaveRefs(&writer))
 				return ss.GetString();
 			return "";
 		}
@@ -86,6 +86,7 @@ namespace My_Ezz
 		}
 		virtual bool Load(const rapidjson::Value& obj) = 0;
 		virtual bool Save(rapidjson::Writer<rapidjson::StringBuffer>* writer) const = 0;
+		virtual bool SaveRefs(rapidjson::Writer<rapidjson::StringBuffer>* writer) const { return true; };
 	protected:
 		bool InitDocument(const std::string& s, rapidjson::Document& doc)
 		{
