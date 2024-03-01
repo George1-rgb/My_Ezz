@@ -22,7 +22,7 @@ namespace My_Ezz
 		virtual void SetScale(const double& dScale);
 
 		void AddMesh(std::shared_ptr<BaseMesh> pMesh);
-		void Draw(std::shared_ptr<ShaderProgram> pShaderProgram);
+		void Draw(std::shared_ptr<ShaderProgram> pShaderProgram, bool bSelected = false);
 		void SetShaderMatrix(const glm::mat4& mProjectionMatrix, const glm::mat4& mViewMatrix);
 		std::shared_ptr<MaterialLibrary> GetMtlLib() const;
 

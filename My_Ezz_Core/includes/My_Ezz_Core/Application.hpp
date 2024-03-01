@@ -9,6 +9,7 @@
 #include "My_Ezz_Core/Interfaces.hpp"
 namespace My_Ezz
 {
+	typedef std::unordered_map<int, std::shared_ptr<Object>> ObjectsMap; //id, object
 	class SkyBox;
 	class Application
 	{
@@ -32,6 +33,8 @@ namespace My_Ezz
 
 		Camera camera{glm::vec3(-5.0f, 0.0f, 0.0f)};
 		float fAngles[3] = { 0.0f, 0.0f, 0.0f };
+	protected:
+		std::shared_ptr<Object> GetPickedObject(const int& nX, const int& nY);
 	private:
 		void InitCallbacks();
 		bool InitShaders();
@@ -50,6 +53,6 @@ namespace My_Ezz
 		std::shared_ptr<ShaderProgram> m_pSelectShaderProgram;
 		std::shared_ptr<ShaderProgram> m_pSelectedFrameShaderProgram;
 
-		bool m_bSelected;
+		ObjectsMap m_mSelectedObjets;
 	};
 }

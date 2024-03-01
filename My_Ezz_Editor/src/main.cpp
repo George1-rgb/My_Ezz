@@ -72,10 +72,10 @@ class My_Ezz_Editor : public My_Ezz::Application
 			rotation_delta.x -= 0.5f;
 		}
 
-		if (My_Ezz::Input::IsMouseButtonPressed(My_Ezz::MouseButton::MOUSE_BUTTON_LEFT))
+		if (My_Ezz::Input::IsMouseButtonPressed(My_Ezz::MouseButton::MOUSE_BUTTON_RIGHT))
 		{
 			glm::vec2 currentCursorPosition = GetCurrentCursorPosition();
-			if (My_Ezz::Input::IsMouseButtonPressed(My_Ezz::MouseButton::MOUSE_BUTTON_RIGHT))
+			if (My_Ezz::Input::IsMouseButtonPressed(My_Ezz::MouseButton::MOUSE_BUTTON_LEFT))
 			{
 				camera.moveRight((currentCursorPosition.x - m_dInitialMousePosX) / 100.0f);
 				camera.moveUp((m_dInitialMousePosY - currentCursorPosition.y) / 100.0f);

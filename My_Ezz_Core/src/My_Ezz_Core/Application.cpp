@@ -37,7 +37,6 @@ using namespace My_Ezz;
 float m_backgroundColor[4] = { 0.5f, 0.5f, 0.5f, 0.0f };
 
 Application::Application()
-	:m_bSelected(false)
 {
     LOG_INFO("Starting Application");
 }
@@ -74,8 +73,10 @@ void Application::UpdateScene()
 
 		UpdateMainShadersParams();
 		for (auto& pDrawObj : m_vDrawingObjects)
-			pDrawObj->Draw(m_pMainShaderProgram);
-
+		{
+			pDrawObj->Rotate(glm::vec3(0.1, 0.1, 0.1));
+			pDrawObj->Draw(m_pMainShaderProgram, m_mSelectedObjets.find(pDrawObj->GetID()) != m_mSelectedObjets.end());
+		}
 }
 
 int Application::start(const char* title, bool bAutoSize, unsigned int widnow_width, unsigned int widnow_height)
@@ -90,14 +91,18 @@ int Application::start(const char* title, bool bAutoSize, unsigned int widnow_wi
     Multimedia::InitSoundContext();
 	
 	std::shared_ptr<Object> pTempObj = ResourceManager::loadObject("test", "res/objects/plane.obj");
-	std::string strTest = pTempObj->Serialize();
+
 	if (pTempObj)
-		pTempObj->SetPosition(glm::vec3(5.f, 0.f, 0.f));
+		pTempObj->SetPosition(glm::vec3(5.f, -5.f, 0.f));
 		m_vDrawingObjects.push_back(pTempObj);
 
+	std::shared_ptr<Object> pTempObj_2 = ResourceManager::loadObject("test_2", "res/objects/plane.obj");
+	if (pTempObj_2)
+		pTempObj_2->SetPosition(glm::vec3(5.f, 5.f, 0.f));
+	m_vDrawingObjects.push_back(pTempObj_2);
 
-	std::shared_ptr<Texture2D> pSkyTexture = ResourceManager::loadTexture("skyBox", "res/textures/pngegg.png");
-	m_pSkyBox = std::make_shared<SkyBox>(100, pSkyTexture);
+	std::shared_ptr<Texture2D> pSkyTexture = ResourceManager::loadTexture("skyBox", "res/textures/skybox.png");
+	m_pSkyBox = std::make_shared<SkyBox>(50, pSkyTexture);
     Renderer_OpenGL::EnableDepthTesting();
 
     while (!m_bCloseWindow)
@@ -155,7 +160,6 @@ void Application::InitCallbacks()
 		{
 			Input::PressMouseButton(event.key_Code);
 			OnMouseButtonEvent(event.key_Code, event.x_pos, event.y_pos, true);
-			LOG_INFO("Mouse position {0}, {1}", event.x_pos, event.y_pos);
 		});
 
 	m_eventDispatcher.addEventListener<EventMouseButtonReleased>(
@@ -225,9 +229,8 @@ void Application::UpdateMainShadersParams()
 	m_pMainShaderProgram->setUniformValue("u_viewMatrix", camera.getViewMatrix());
 	m_pMainShaderProgram->setUniformValue("u_shadowMap", GL_TEXTURE4 - GL_TEXTURE0);
 	m_pMainShaderProgram->setUniformValue("u_lightDirection", glm::vec4(0.0f, 0.0f, -1.0f, 0.0f));
-	m_pMainShaderProgram->setUniformValue("u_borderWidth", 0.002);
+	m_pMainShaderProgram->setUniformValue("u_borderWidth", 0.0001);
 	m_pMainShaderProgram->setUniformValue("u_aspectRatio", camera.GetAspectRatio());
-	m_pMainShaderProgram->setUniformValue("u_bSelected", m_bSelected);
 	//TODO:מבתוהוםטעü ס depth רויהונמל
 	glm::mat4 projectionLightMatrix = glm::mat4(1.0f);
 	projectionLightMatrix = glm::ortho(-40.0f, 40.0f, -40.0f, 40.0f, -40.0f, 40.0f);
@@ -254,31 +257,57 @@ void Application::UpdateSkyBoxShadersParams()
 
 void Application::OnMouseButtonEvent(const MouseButton mouseButton, const double x_pos, const double y_pos, const bool bPressed)
 {
-	if (!bPressed)
-		return;
+	switch (mouseButton)
+	{
+	case MouseButton::MOUSE_BUTTON_LEFT:
+	{
+		if (!bPressed)
+			return;
+		std::shared_ptr<Object> pPickedObject = GetPickedObject(x_pos, y_pos);
+
+		if (pPickedObject)
+		{
+			auto pIter = m_mSelectedObjets.find(pPickedObject->GetID());
+			if (pIter == m_mSelectedObjets.end())
+				m_mSelectedObjets.insert(std::pair<int, std::shared_ptr<Object>>(pPickedObject->GetID(), pPickedObject));
+			else
+			{
+				m_mSelectedObjets.erase(pIter);
+			}
+		}
+		else
+			m_mSelectedObjets.clear();
+	}
+	break;
+	}
+}
+
+std::shared_ptr<My_Ezz::Object> Application::GetPickedObject(const int& nX, const int& nY)
+{
 	Renderer_OpenGL::DisableDepthTesting();
 	m_pSelectShaderProgram->bind();
 	m_pSelectShaderProgram->setUniformValue("u_projectionMatrix", camera.getProjectionMatrix());
 	m_pSelectShaderProgram->setUniformValue("u_viewMatrix", camera.getViewMatrix());
-	for (auto pObject : m_vDrawingObjects)
+	for (const auto& pObject : m_vDrawingObjects)
 	{
 		int id = pObject->GetID();
 		m_pSelectShaderProgram->setUniformValue("u_code", static_cast<double>(id) / 255.0);
 		pObject->Draw(m_pSelectShaderProgram);
 	}
-	
+
 	unsigned char data[4];
-	glReadPixels(x_pos, camera.GetVPHeight() - y_pos, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, data);
+	glReadPixels(nX, camera.GetVPHeight() - nY, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, data);
 	int nData = 0;
 
 	nData += data[0];
 
-	for (auto pObject : m_vDrawingObjects)
-	{
-		int id = pObject->GetID();
-		if (id == nData)
-			m_bSelected = true;
-		else
-			m_bSelected = false;
-	}
+
+	auto pObject = std::find_if(m_vDrawingObjects.begin(), m_vDrawingObjects.end(),
+		[nData](const std::shared_ptr<Object>& pFindedObject)
+		{
+			return nData == pFindedObject->GetID();
+		});
+	if (pObject != m_vDrawingObjects.end())
+		return *pObject;
+	return nullptr;
 }

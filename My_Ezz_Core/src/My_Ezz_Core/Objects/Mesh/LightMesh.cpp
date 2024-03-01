@@ -23,7 +23,7 @@ namespace My_Ezz
 
 	}
 
-	void LightMesh::Draw(std::shared_ptr<ShaderProgram> pShaderProgram)
+	void LightMesh::Draw(std::shared_ptr<ShaderProgram> pShaderProgram, bool bSelected /*= false*/)
 	{
 		glm::mat4 mModelMatrix(1.0f);
 		mModelMatrix = glm::translate(mModelMatrix, m_vPosition);

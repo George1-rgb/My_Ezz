@@ -47,7 +47,7 @@ namespace My_Ezz
 		m_pVAO->setIndexBuffer(*m_pIndexes.get());
 	}
 
-	void BaseMesh::Draw(std::shared_ptr<ShaderProgram> pShaderProgram)
+	void BaseMesh::Draw(std::shared_ptr<ShaderProgram> pShaderProgram, bool bSelected/* = false*/)
 	{
 		if (m_pMaterial && m_pMaterial->IsUsingDiffuseMap())
 		{
@@ -70,7 +70,7 @@ namespace My_Ezz
 		modelMatrix = glm::scale(modelMatrix, glm::vec3(m_dScale));
 		modelMatrix = glm::mat4(1.0f) * modelMatrix;
 		pShaderProgram->setUniformValue("u_modelMatrix", modelMatrix);
-
+		pShaderProgram->setUniformValue("u_bSelected", bSelected);
 		if (m_pMaterial)
 		{
 			pShaderProgram->setUniformValue("u_materialProperty.ambientColor", m_pMaterial->GetAmbientColor());

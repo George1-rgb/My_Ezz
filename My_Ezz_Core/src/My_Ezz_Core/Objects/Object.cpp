@@ -67,10 +67,10 @@ namespace My_Ezz
 			m_vMeshes.push_back(pMesh);
 	}
 
-	void Object::Draw(std::shared_ptr<ShaderProgram> pShaderProgram)
+	void Object::Draw(std::shared_ptr<ShaderProgram> pShaderProgram, bool bSelected/* = false*/)
 	{
 		for (auto pMesh : m_vMeshes)
-			pMesh->Draw(pShaderProgram);
+			pMesh->Draw(pShaderProgram, bSelected);
 	}
 
 	void Object::SetShaderMatrix(const glm::mat4& mProjectionMatrix, const glm::mat4& mViewMatrix)

@@ -24,7 +24,7 @@ namespace My_Ezz
 		IDrawing() {}
 		virtual ~IDrawing() {}
 		virtual void LoadMesh(std::shared_ptr<VertexBuffer> m_pPositions, std::shared_ptr<IndexBuffer> m_pIndexes) = 0;
-		virtual void Draw(std::shared_ptr<ShaderProgram> pShaderProgram) = 0;
+		virtual void Draw(std::shared_ptr<ShaderProgram> pShaderProgram, bool bSelected = false) = 0;
 		virtual void SetShaderMatrixs(const glm::mat4& mProjectionMatrix, const glm::mat4& mViewMatrix) = 0;
 	};
 

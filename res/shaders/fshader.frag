@@ -125,16 +125,7 @@ void main()
     else
     {
 
-        if (v_texcoord.x < maxX && v_texcoord.x > minX &&
-            v_texcoord.y < maxY && v_texcoord.y > minY) 
-        {
-                
-            frag_color = resultColor * shadowCoef;
-        }
-        else
-        {
-            frag_color = vec4(0.5, 0.5, 0.5, 1.0f);
-        }
+       frag_color = vec4(1.0, 1.0, 0.1, 1.0);
     }
     
 }

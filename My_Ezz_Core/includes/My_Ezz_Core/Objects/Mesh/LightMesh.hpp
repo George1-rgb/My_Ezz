@@ -12,7 +12,7 @@ namespace My_Ezz
 		LightMesh(std::shared_ptr<VertexBuffer> m_pPositions, std::shared_ptr<IndexBuffer> m_pIndexes);
 		virtual  ~LightMesh() {}
 
-		void Draw(std::shared_ptr<ShaderProgram> pShaderProgram) override;
+		void Draw(std::shared_ptr<ShaderProgram> pShaderProgram, bool bSelected = false) override;
 		void SetColor(const glm::vec3& vColor);
 	protected:
 		glm::vec3 m_vLightSourcePosition = { 0.0f, 0.0f, 0.0f };

@@ -15,7 +15,7 @@ namespace My_Ezz
 
 		//IDrawing
 		void LoadMesh(std::shared_ptr<VertexBuffer> m_pPositions, std::shared_ptr<IndexBuffer> m_pIndexes) override;
-		void Draw(std::shared_ptr<ShaderProgram> pShaderProgram) override;
+		void Draw(std::shared_ptr<ShaderProgram> pShaderProgram, bool bSelected = false) override;
 		void SetShaderMatrixs(const glm::mat4& mProjectionMatrix, const glm::mat4& mViewMatrix) override;
 
 		//ITransforming
