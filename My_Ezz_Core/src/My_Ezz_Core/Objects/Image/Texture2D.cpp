@@ -12,11 +12,12 @@ namespace My_Ezz
 		glCreateTextures(GL_TEXTURE_2D, 1, &m_nID);
 		const GLsizei mipLevels = static_cast<GLsizei>(log2(std::max(m_nWidth, m_nHeight))) + 1;
 		glTextureStorage2D(m_nID, mipLevels, GL_RGB8, m_nWidth, m_nHeight);
-		glTextureSubImage2D(m_nID, 0, 0, 0, m_nWidth, m_nHeight, textureType == TextureType::kDiffuse ? GL_RGBA : GL_RGB, GL_UNSIGNED_BYTE, cData);
+		bool bUseRGBA = textureType == TextureType::kDiffuse || textureType == TextureType::kSkyBox;
+		glTextureSubImage2D(m_nID, 0, 0, 0, m_nWidth, m_nHeight, bUseRGBA ? GL_RGBA : GL_RGB, GL_UNSIGNED_BYTE, cData);
 		glTextureParameteri(m_nID, GL_TEXTURE_WRAP_S, GL_REPEAT);
 		glTextureParameteri(m_nID, GL_TEXTURE_WRAP_T, GL_REPEAT);
-		glTextureParameteri(m_nID, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-		glTextureParameteri(m_nID, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTextureParameteri(m_nID, GL_TEXTURE_MIN_FILTER, textureType == TextureType::kSkyBox ? GL_NEAREST : GL_LINEAR_MIPMAP_NEAREST);
+		glTextureParameteri(m_nID, GL_TEXTURE_MAG_FILTER, textureType == TextureType::kSkyBox ? GL_NEAREST : GL_LINEAR);
 		glGenerateTextureMipmap(m_nID);
 	}
 

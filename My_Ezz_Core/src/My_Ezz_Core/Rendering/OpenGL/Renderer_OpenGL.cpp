@@ -111,6 +111,7 @@ void Renderer_OpenGL::draw(const VertexArray& _vertexArray)
 {
     _vertexArray.bind();
     glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(_vertexArray.getIndecesCount()), GL_UNSIGNED_INT, nullptr);
+	_vertexArray.unbind();
 }
 
 void Renderer_OpenGL::setClearColor(const float _red, const float _green, const float _blue, const float _alpha)

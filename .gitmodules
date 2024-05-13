@@ -16,3 +16,9 @@
 [submodule "external/rapidjson"]
 	path = external/rapidjson
 	url = https://github.com/Tencent/rapidjson.git
+[submodule "externalimgui_dialog"]
+	path = externalimgui_dialog
+	url = https://github.com/aiekick/ImGuiFileDialog.git
+[submodule "external/imgui_dialog"]
+	path = external/imgui_dialog
+	url = https://github.com/aiekick/ImGuiFileDialog.git

@@ -31,6 +31,8 @@ namespace My_Ezz
 
 		glm::vec2 GetCurrentCursorPosition() const;
 
+		bool AppendObjectToScene(const std::string& strObjectName);
+
 		Camera camera{glm::vec3(-5.0f, 0.0f, 0.0f)};
 		float fAngles[3] = { 0.0f, 0.0f, 0.0f };
 	protected:
@@ -38,6 +40,7 @@ namespace My_Ezz
 	private:
 		void InitCallbacks();
 		bool InitShaders();
+		void InitSkyBox();
 		void Update();
 		void UpdateScene();
 		void UpdateMainShadersParams();

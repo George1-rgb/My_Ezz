@@ -17,6 +17,8 @@
 
 
 #include <imgui/imgui.h>
+#include <imgui/imgui_internal.h>
+#include <imgui_dialog/ImGuiFileDialog.h>
 #include <glm/mat3x3.hpp>
 #include <glm/ext/matrix_transform.hpp>
 #include <glm/trigonometric.hpp>
@@ -38,12 +40,11 @@ float m_backgroundColor[4] = { 0.5f, 0.5f, 0.5f, 0.0f };
 
 Application::Application()
 {
-    LOG_INFO("Starting Application");
+	LOG_INFO("This is My_Ezz ENGINE v1.0. All rights reserved.");
 }
 
 Application::~Application()
 {
-    LOG_INFO("Closing Application");
 }
 
 void Application::Update()
@@ -70,46 +71,36 @@ void Application::UpdateScene()
 
 	UpdateSkyBoxShadersParams();
 	m_pSkyBox->Draw(m_pSkyBoxShaderProgram);
-
+	m_pSkyBoxShaderProgram->unbind();
+	if (!m_vDrawingObjects.empty())
+	{
 		UpdateMainShadersParams();
 		for (auto& pDrawObj : m_vDrawingObjects)
 		{
-			pDrawObj->Rotate(glm::vec3(0.1, 0.1, 0.1));
-			pDrawObj->Draw(m_pMainShaderProgram, m_mSelectedObjets.find(pDrawObj->GetID()) != m_mSelectedObjets.end());
+			if (pDrawObj)
+				pDrawObj->Draw(m_pMainShaderProgram, m_mSelectedObjets.find(pDrawObj->GetID()) != m_mSelectedObjets.end());
 		}
+		m_pMainShaderProgram->unbind();
+	}
 }
 
 int Application::start(const char* title, bool bAutoSize, unsigned int widnow_width, unsigned int widnow_height)
 {
-
     m_window = std::make_unique<Window>(title, bAutoSize, widnow_width, widnow_height);
     camera.SetViewportSize(static_cast<float>(m_window->get_width()), static_cast<float>(m_window->get_height()));
 	camera.setPosition(glm::vec3(-5.0f, 0.f, 0.f));
 	if (!InitShaders())
 		return -1;
 	InitCallbacks();
-    Multimedia::InitSoundContext();
-	
-	std::shared_ptr<Object> pTempObj = ResourceManager::loadObject("test", "res/objects/plane.obj");
-
-	if (pTempObj)
-		pTempObj->SetPosition(glm::vec3(5.f, -5.f, 0.f));
-		m_vDrawingObjects.push_back(pTempObj);
-
-	std::shared_ptr<Object> pTempObj_2 = ResourceManager::loadObject("test_2", "res/objects/plane.obj");
-	if (pTempObj_2)
-		pTempObj_2->SetPosition(glm::vec3(5.f, 5.f, 0.f));
-	m_vDrawingObjects.push_back(pTempObj_2);
-
-	std::shared_ptr<Texture2D> pSkyTexture = ResourceManager::loadTexture("skyBox", "res/textures/skybox.png");
-	m_pSkyBox = std::make_shared<SkyBox>(50, pSkyTexture);
+	Multimedia::InitSoundContext();
+	InitSkyBox();
     Renderer_OpenGL::EnableDepthTesting();
 
     while (!m_bCloseWindow)
     {
 		Update();
     }
-    m_window = nullptr;
+    m_window.reset();
 
     return 0;
 }
@@ -207,18 +198,6 @@ bool Application::InitShaders()
 	}
 	else
 		LOG_INFO("The shader select is compiled");
-
-	//ResourceManager::loadShaders("selectedFrame", "res/shaders/selected_farme.vert", "res/shaders/selected_farme.frag");
-	//m_pSelectedFrameShaderProgram = ResourceManager::getShaderProgram("selectedFrame");
-	//if (!m_pSelectedFrameShaderProgram->isCompiled())
-	//{
-	//	LOG_INFO("The shader selectedFrame is not compiled");
-	//	return false;
-	//}
-	//else
-	//	LOG_INFO("The shader selectedFrame is compiled");
-
-
 	return true;
 }
 
@@ -246,6 +225,7 @@ void Application::UpdateMainShadersParams()
 	lightMatrix = glm::rotate(lightMatrix, -30.0f, glm::vec3(1.0f, 0.0f, 0.0f));
 	m_pMainShaderProgram->setUniformValue("u_lightMatrix", lightMatrix);
 	m_pMainShaderProgram->setUniformValue("u_lightPower", 10.0f);
+	
 }
 
 void Application::UpdateSkyBoxShadersParams()
@@ -253,6 +233,7 @@ void Application::UpdateSkyBoxShadersParams()
 	m_pSkyBoxShaderProgram->bind();
 	m_pSkyBoxShaderProgram->setUniformValue("u_projectionMatrix", camera.getProjectionMatrix());
 	m_pSkyBoxShaderProgram->setUniformValue("u_viewMatrix", camera.getViewMatrix());
+	
 }
 
 void Application::OnMouseButtonEvent(const MouseButton mouseButton, const double x_pos, const double y_pos, const bool bPressed)
@@ -288,13 +269,14 @@ std::shared_ptr<My_Ezz::Object> Application::GetPickedObject(const int& nX, cons
 	m_pSelectShaderProgram->bind();
 	m_pSelectShaderProgram->setUniformValue("u_projectionMatrix", camera.getProjectionMatrix());
 	m_pSelectShaderProgram->setUniformValue("u_viewMatrix", camera.getViewMatrix());
+	
 	for (const auto& pObject : m_vDrawingObjects)
 	{
 		int id = pObject->GetID();
 		m_pSelectShaderProgram->setUniformValue("u_code", static_cast<double>(id) / 255.0);
 		pObject->Draw(m_pSelectShaderProgram);
 	}
-
+	m_pSelectShaderProgram->unbind();
 	unsigned char data[4];
 	glReadPixels(nX, camera.GetVPHeight() - nY, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, data);
 	int nData = 0;
@@ -310,4 +292,16 @@ std::shared_ptr<My_Ezz::Object> Application::GetPickedObject(const int& nX, cons
 	if (pObject != m_vDrawingObjects.end())
 		return *pObject;
 	return nullptr;
+}
+
+bool Application::AppendObjectToScene(const std::string& strObjectName)
+{
+	m_vDrawingObjects.push_back(ResourceManager::getObject(strObjectName));
+	return true;
+}
+
+void Application::InitSkyBox()
+{
+	std::shared_ptr<Texture2D> pSkyTexture = ResourceManager::loadTexture("skyBox", "res/textures/skybox.png", TextureType::kSkyBox);
+	m_pSkyBox = std::make_shared<SkyBox>(50, pSkyTexture);
 }

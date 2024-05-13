@@ -3,6 +3,8 @@
 #include <map>
 #include <vector>
 #include "My_Ezz_Core/Objects/Image/Texture2D.hpp"
+#include <list>
+
 namespace My_Ezz
 {
 	class AudioBase;
@@ -12,7 +14,7 @@ namespace My_Ezz
 	class Material;
 	class MaterialLibrary;
 }
-
+typedef float GLfloat;
 
 class ResourceManager
 {
@@ -43,14 +45,16 @@ public:
 	static std::shared_ptr<My_Ezz::AudioBase> loadSound(const std::string& soundName, const std::string& soundPath);
 	static std::shared_ptr<My_Ezz::AudioBase> getSound(const std::string& soundName);
 
-	static std::shared_ptr<My_Ezz::Object> loadObject(const std::string& strObjectName, const std::string& strObjectPath, EObjectType eType = EObjectType::kBase);
+	static std::shared_ptr<My_Ezz::Object> loadObject(const std::string& strObjectName, const std::string& strObjectPath, bool bFullPath = false,
+		EObjectType eType = EObjectType::kBase);
 	static std::shared_ptr<My_Ezz::Object> getObject(const std::string& strObjectName);
 
-	static std::shared_ptr<My_Ezz::Texture2D> loadTexture(const std::string& strTextureName, const std::string& strTexturePath, My_Ezz::TextureType textureType = My_Ezz::TextureType::kDiffuse);
+	static std::shared_ptr<My_Ezz::Texture2D> loadTexture(const std::string& strTextureName, const std::string& strTexturePath, My_Ezz::TextureType textureType = My_Ezz::TextureType::kDiffuse, bool bFullPath = false);
 	static std::shared_ptr<My_Ezz::Texture2D> getTexture(const std::string& strTextureName);
 
-	static std::shared_ptr<My_Ezz::Material> loadMaterial(const std::string& strMaterialPath, std::shared_ptr<My_Ezz::MaterialLibrary> pMaterialLib);
-
+	static std::shared_ptr<My_Ezz::Material> loadMaterial(const std::string& strMaterialPath, std::shared_ptr<My_Ezz::MaterialLibrary> pMaterialLib, bool bFullPath = false);
+private:
+	static void CalcTBN(std::list<GLfloat>& vertexBuff);
 private:
 	static std::string getFileString(const std::string& ralativeFilePath);
 
@@ -69,4 +73,6 @@ private:
 	static TexturesMap m_textures;
 
 	static std::string path;
+
+
 };

@@ -55,6 +55,7 @@ void VertexArray::addVertexBuffer(const VertexBuffer& _vertexBuffer)
 
 		++m_countOfElements;
 	}
+	unbind();
 }
 
 void VertexArray::setIndexBuffer(const IndexBuffer& _indexBuffer)
@@ -73,6 +74,5 @@ void VertexArray::bind() const
 
 void VertexArray::unbind()
 {
-	
 	glBindVertexArray(0);
 }

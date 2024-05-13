@@ -2,10 +2,12 @@
 #include <memory>
 #include <imgui/imgui.h>
 #include <imgui/imgui_internal.h>
+#include <imgui_dialog/ImGuiFileDialog.h>
 
 #include <My_Ezz_Core/Input.hpp>
 #include <My_Ezz_Core/Application.hpp>
 #include <My_Ezz_Core/ResourceManager.hpp>
+#include <thread>
 class My_Ezz_Editor : public My_Ezz::Application
 {
 	double m_dInitialMousePosX = 0.0;
@@ -131,6 +133,14 @@ class My_Ezz_Editor : public My_Ezz::Application
 				{
 
 				}
+				if (ImGui::MenuItem("Add new object", NULL))
+				{
+					IGFD::FileDialogConfig config;
+					config.path = ".";
+					config.countSelectionMax = 1;
+					config.flags = ImGuiFileDialogFlags_Modal;
+					ImGuiFileDialog::Instance()->OpenDialog("Add new object", "Add new object", ".obj", config);
+				}
 				ImGui::Separator();
 				if (ImGui::MenuItem("Exit", NULL))
 				{
@@ -186,7 +196,7 @@ class My_Ezz_Editor : public My_Ezz::Application
 		{
 			camera.SetNearClipPlane(cameraNearPlane);
 		}
-		if (ImGui::SliderFloat("Camera far plane", &cameraFarPlane, 1.0f, 100.0f))
+		if (ImGui::SliderFloat("Camera far plane", &cameraFarPlane, 1.0f, 1000.0f))
 		{
 			camera.SetFarClipPlane(cameraFarPlane);
 		}
@@ -194,7 +204,27 @@ class My_Ezz_Editor : public My_Ezz::Application
 		{
 			camera.setProjectionMode(perspectiveCamera ? My_Ezz::Camera::ProjectionMode::Perspective : My_Ezz::Camera::ProjectionMode::Orthographic);
 		}
+		if (ImGui::Button("Load model", ImVec2(250, 100)))
+		{
+			
+			
+		}
 		ImGui::End();
+
+		if (ImGuiFileDialog::Instance()->Display("Add new object"))
+		{
+			if (ImGuiFileDialog::Instance()->IsOk())
+			{ // action if OK
+				std::string strPath = ImGuiFileDialog::Instance()->GetFilePathName();
+				std::string strName = "test";//ImGuiFileDialog::Instance()->GetCurrentFileName();
+				ImGuiFileDialog::Instance()->Close();
+				
+				ResourceManager::loadObject(strName, strPath, true);
+				AppendObjectToScene(strName);
+			}
+			else
+				ImGuiFileDialog::Instance()->Close();
+		}
 	}
 
 	int frame = 0;

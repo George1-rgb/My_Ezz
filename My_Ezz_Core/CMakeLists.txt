@@ -106,10 +106,28 @@ ${IMGUI_INCLUDES}
 ${IMGUI_SOURCES}
 )
 
+set(IMGUIDLG_INCLUDES
+../external/imgui_dialog/ImGuiFileDialog.h
+../external/imgui_dialog/ImGuiFileDialogConfig.h
+)
+
+set(IMGUIDLG_SOURCES
+../external/imgui_dialog/ImGuiFileDialog.cpp
+)
+
+add_library(imgui_dialog STATIC
+${IMGUIDLG_INCLUDES}
+${IMGUIDLG_SOURCES}
+)
+
 target_include_directories(ImGui PUBLIC ../external)
 target_include_directories(ImGui PUBLIC ../external/imgui)
+target_include_directories(imgui_dialog PUBLIC ../external)
+target_include_directories(imgui_dialog PUBLIC ../external/imgui_dialog)
 
 target_link_libraries(ImGui PRIVATE glad glfw)
+target_link_libraries(imgui_dialog PRIVATE ImGui)
 
 target_link_libraries(${CORE_PROJECT_NAME} PRIVATE ImGui)
+target_link_libraries(${CORE_PROJECT_NAME} PRIVATE imgui_dialog)
 target_link_libraries(${CORE_PROJECT_NAME} PRIVATE My_Ezz_Multimedia My_Ezz_Logger)

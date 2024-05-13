@@ -5,7 +5,8 @@ namespace My_Ezz
 	enum class TextureType
 	{
 		kDiffuse,
-		kNormal
+		kNormal,
+		kSkyBox
 	};
 	class Texture2D
 	{
